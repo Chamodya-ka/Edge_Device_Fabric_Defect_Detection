@@ -7,8 +7,8 @@
   year = {2021}
 }
 ```
-
-Inference time :
+This method uses a 2 stage neural network for segmentation and classification.
+Inference time : Still training
 
 
 Using DAGM 2007 dataset
