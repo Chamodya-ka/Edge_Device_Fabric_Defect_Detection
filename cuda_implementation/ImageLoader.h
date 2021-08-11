@@ -14,13 +14,13 @@ class ImageLoader{
 
 public:
 
-    Image readImage(string filename);
+    static Image readImage(string filename, unsigned int inmaxlevel =255 , unsigned int inminlevel= 0, unsigned int maxgraylevel = 8);
     //Image readImage(int index);
 
 private:
 
-    Mat readImageFromFile(string filename);
-    Mat toGrayScale(const Mat& image);
-    Mat quantize(Mat& image, unsigned int graylevel = 8,unsigned int minlevel=0);
+    static Mat readImageFromFile(string filename);
+    //static Mat toGrayScale(const Mat& image);
+    static Mat quantize(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
     
 };
