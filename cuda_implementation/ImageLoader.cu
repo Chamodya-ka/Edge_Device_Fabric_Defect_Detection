@@ -31,19 +31,31 @@ Mat ImageLoader::readImageFromFile(string filename){
 
 }
 
-Image ImageLoader::readImage(string filename, unsigned int maxgraylevel = 8, unsigned int inmaxlevel = 255 , unsigned int inminlevel = 0 ){
+Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned int inminlevel, unsigned int maxgraylevel){
     Mat im = readImageFromFile(filename);
+    
+    //Debugging
+    
+    imshow("test1",im);
+    waitKey(0);
+    //Debuggin end
     im = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
-  //  Vector<uchar> pixels(im.total);
+
+    Mat dst;
+    normalize(im, dst, 0, 255, cv::NORM_MINMAX,CV_8UC1);
+    imshow("test2",dst);
+    waitKey(0);
+
     vector<uint> pixels(im.total());
-    //readUchars(pixels,im);
+
     if (im.isContinuous()) {
-        pixels.assign((uchar*)im.datastart, (uchar*)im.dataend);
+        pixels.assign((uint*)im.datastart, (uint*)im.dataend);
     } else {
         for (int i = 0; i < im.rows; ++i) {
-            pixels.insert(pixels.end(), im.ptr<uchar>(i), im.ptr<uchar>(i)+im.cols);
+            pixels.insert(pixels.end(), im.ptr<uint>(i), im.ptr<uint>(i)+im.cols);
         }
     }
+
     Image image = Image(pixels, im.rows, im.cols, 0, maxgraylevel);
     return image;
 }
@@ -53,14 +65,15 @@ Image ImageLoader::readImage(string filename, unsigned int maxgraylevel = 8, uns
 {
     Mat convertedImage = img.clone();
 
-    convertedImage = img / inminlevel;
-    MatIterator_<uchar> it ;
     
-    for (it =  convertedImage.begin<uchar>();it != convertedImage.end<uchar>(); it++){
-        uchar intensity = *it;
-        uchar newintensity = (uchar)round( (intensity - inminlevel) * (maxgraylevel) / (inmaxlevel-inminlevel) );
+    MatIterator_<ushort> it ;
+    
+    for (it =  convertedImage.begin<ushort>();it != convertedImage.end<ushort>(); it++){
+        uint intensity = *it;
+        std::cout << "old "+ std::to_string(intensity)  << "\n";
+        uint newintensity = (uint)round( (intensity - inminlevel) * (maxgraylevel) / (double)(inmaxlevel-inminlevel) );
         *it = newintensity;
-
+        std::cout << "new "+ std::to_string(newintensity)  << "\n";
     }
     
     return convertedImage; 
