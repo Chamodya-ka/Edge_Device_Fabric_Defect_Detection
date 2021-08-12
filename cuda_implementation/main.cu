@@ -16,11 +16,8 @@ int main(){
     
     Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl);
     vector<uint> pixels = img.getPixels();
-    uint zero = 0;
-    uint one = 0;
-    uint two = 0;
-    uint three = 0;
-    uint eight = 0;
+    uint zero,one,two,three,four,five,six,seven,eight = 0;
+
     
 
     for(std::size_t i = 0; i < pixels.size(); ++i) {
@@ -33,6 +30,14 @@ int main(){
             two+=1;
         else if (pixels[i]==3)
             three+=1;
+        else if (pixels[i]==4)
+            four+=1;
+        else if (pixels[i]==5)
+            five+=1;
+        else if (pixels[i]==6)
+            six+=1;
+        else if (pixels[i]==7)
+            seven+=1;
         else if (pixels[i]==8)
             eight+=1;
 
@@ -41,6 +46,10 @@ int main(){
     std::cout << one << "\n";
     std::cout << two << "\n";
     std::cout << three << "\n";
+    std::cout << four << "\n";
+    std::cout << five << "\n";
+    std::cout << six << "\n";
+    std::cout << seven << "\n";
     std::cout << eight << "\n";
 /* 
     Implement

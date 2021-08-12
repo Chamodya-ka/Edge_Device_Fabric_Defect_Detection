@@ -8,7 +8,7 @@ Mat ImageLoader::readImageFromFile(string filename){
     Mat image;
 
     try{
-        image = imread(filename);
+        image = imread(filename, IMREAD_UNCHANGED);
     }catch (cv::Exception& e) {
         const char *err_msg = e.what();
         cerr << "Exception occurred: " << err_msg << endl;
@@ -19,31 +19,45 @@ Mat ImageLoader::readImageFromFile(string filename){
         cout <<  "Could not open or find the image" << std::endl ;
         exit(-1);
     }
+    cout <<  "Channels - " << image.channels() << std::endl ;
+    cout <<  "Type - " << image.type() << std::endl ;
 
-    if((image.depth() != CV_8UC1))
+    if((image.channels() != 1) || (image.type() != 8))
     {
-
+        cout <<  "Changing the depth of image" << std::endl ;
         cvtColor(image, image, CV_RGB2GRAY);
         image.convertTo(image, CV_8UC1);
     }
-
+    cout <<  "Channels - " << image.channels() << std::endl ;
+    cout <<  "Type - " << image.type() << std::endl ;
     return image;
 
 }
 
 Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned int inminlevel, unsigned int maxgraylevel){
+    double minVal; 
+    double maxVal; 
+    Point minLoc; 
+    Point maxLoc;
+
+    
     Mat im = readImageFromFile(filename);
+    minMaxLoc( im, &minVal, &maxVal, &minLoc, &maxLoc );
+    cout <<  "Max pixel - " << maxVal << std::endl ;
+    cout <<  "Min pixel - " << minVal << std::endl ;
     
     //Debugging
-    
     imshow("test1",im);
+    Mat dst = im.clone();
+    imshow("dest one",im);
     waitKey(0);
     //Debuggin end
+
+
     im = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
 
-    Mat dst;
-    normalize(im, dst, 0, 255, cv::NORM_MINMAX,CV_8UC1);
-    imshow("test2",dst);
+    normalize(im, dst, 0, 255, NORM_MINMAX,CV_8UC1);
+    imshow("dest2",dst);
     waitKey(0);
 
     vector<uint> pixels(im.total());
@@ -66,9 +80,9 @@ Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned 
     Mat convertedImage = img.clone();
 
     
-    MatIterator_<ushort> it ;
+    MatIterator_<uchar> it ;
     
-    for (it =  convertedImage.begin<ushort>();it != convertedImage.end<ushort>(); it++){
+    for (it =  convertedImage.begin<uchar>();it != convertedImage.end<uchar>(); it++){
         uint intensity = *it;
         std::cout << "old "+ std::to_string(intensity)  << "\n";
         uint newintensity = (uint)round( (intensity - inminlevel) * (maxgraylevel) / (double)(inmaxlevel-inminlevel) );

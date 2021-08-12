@@ -14,7 +14,7 @@ class ImageLoader{
 
 public:
 
-    static Image readImage(string filename, unsigned int inmaxlevel =255 , unsigned int inminlevel= 0, unsigned int maxgraylevel = 8);
+    static Image readImage(string filename, unsigned int inmaxlevel =255 , unsigned int inminlevel= 0, unsigned int maxgraylevel = 7);
     //Image readImage(int index);
 
 private:
