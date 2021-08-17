@@ -7,13 +7,17 @@ using namespace std;
 class Image {
 
 public:
-    Image(vector<unsigned int> pixels, unsigned int rows, unsigned int cols,unsigned int mingraylevel,
+    Image(vector<uint> pixels, unsigned int rows, unsigned int cols,unsigned int mingraylevel,
     unsigned int maxgraylevel);
-    vector<unsigned int> getPixels();
-    
+    vector<uint> getPixels();
+    unsigned int get_rows();
+    unsigned int get_cols();
+    unsigned int get_maxGL();
+    vector<vector<uint8_t>> get2dVector();
+
 
 private:
-    vector<unsigned int> pixels;
+    vector<uint> pixels;
     unsigned int rows;
     unsigned int cols;
     unsigned int graylevel;

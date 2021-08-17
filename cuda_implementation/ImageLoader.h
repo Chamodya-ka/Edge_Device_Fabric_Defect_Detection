@@ -3,7 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core.hpp>
 #include "Image.h"
-
+#include <string>
 using namespace cv;
 using namespace std;
 
@@ -21,6 +21,7 @@ private:
 
     static Mat readImageFromFile(string filename);
     //static Mat toGrayScale(const Mat& image);
-    static Mat quantize(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
+    static vector<uint> quantize(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
+    static Mat getQuantizedMat(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
     
 };
