@@ -22,3 +22,15 @@ Using ImageLoader images are loaded as grayscaled images of depth : ```CV_8UC1``
 <img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/main/cuda_implementation/testimg/gradientresult.png" width="200">
 
 These pixel values are stored in an vector of the Image object.
+
+## Computing GLCM
+
+<img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/main/cuda_implementation/images/2D_Representation.jpg" width="600">
+
+The 1D image vector obtained from the ImageLoader is fed into the GLCMComputation object. GLCMComputation::GetSubGLCM(params) returns the GLCMS calculated for 32x32 pixels^2 sub windows and it is used for demonstration. 4 Co-occurence matrices are calculated for ```theta=0``` ```theta=45``` ```theta=90``` ```theta=135```.Hence the resulting array would contain 64x64x4 sub GLCMs. These sub GLCMs will be used to calculate the Haralick features to obtain a feature vector.
+
+#### Challenges
+Time spent by blocked threads during synchronized operations are significant. The trial implementation done last week which computed a **single** GLCM on the global memory for a 1250x1250 image requred ```~0.96ms```. This is due to high number of frequently occuring data patters written to a small space (8x8 space). 
+To overcome this issue in computing the sub GLCMs, each sub grid of the image that was processed by a block of threads was given an 8x8x4 grid in the shared memory for the 4 resultant GLCMs. By doing this the global memory access were reduced as well.
+
+
