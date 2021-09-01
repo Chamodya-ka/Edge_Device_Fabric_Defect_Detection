@@ -21,30 +21,42 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, const int N,con
                 
                 if (idX< N){
                     
-                    if(idX + 1 < N && floorf((idX + 1)/cols)==floorf(idX/cols)){
+                    if(idX + 1 < N && floorf((idX + 1)/blockDim.x)==floorf(idX/blockDim.x)){
                         //d = 0 - Compare and add Current index and Current Index  + 1  
                         //assert(localIdX < 0); 
                         atomicAdd( &subGLCM[pixels[idX] * gl + pixels[idX+1] ],1);
                         //assert(localIdX < 0); 
                          
                     }
-                    if(idX - cols>=0){
+                    /* if(idX - cols>=0){
                         //d = 90
                         //assert(localIdX < 0); 
                         atomicAdd( &subGLCM[(1 * gl * gl) + pixels[idX] * gl +  pixels[idX-cols]], 1);
                         //assert(localIdX < 0); 
+                    } */
+                    if(floorf((idX - blockDim.x)/(blockDim.x * blockDim.y) )== floorf(idX /(blockDim.x * blockDim.y) )){
+                        //d = 90
+                        atomicAdd( &subGLCM[(1 * gl * gl) + pixels[idX] * gl +  pixels[idX-blockDim.x]], 1);
                     }
                     //assert(localIdX < 0); 
-                    if(idX - cols+1>=0){
+                    /* if(idX - cols+1>=0){
                         //d = 45
                         //assert(localIdX < 0); 
                         atomicAdd( &subGLCM[(2 * gl* gl)  + pixels[idX] * gl] +  pixels[idX-cols+1], 1);
+                    } */
+                    if (floorf((idX - blockDim.x+1)/(blockDim.x * blockDim.y) )== floorf(idX /(blockDim.x * blockDim.y))){
+                        if (floorf((idX - blockDim.x+1)/blockDim.x)  == floorf(idX /blockDim.x))
+                            //d = 45
+                            atomicAdd( &subGLCM[(1 * gl * gl) + pixels[idX] * gl +  pixels[idX-blockDim.x+1]], 1);
                     }
-                    
-                    if(idX - cols-1>=0){
+                    /* if(idX - cols-1>=0){
                         //d = 135
                         atomicAdd( &subGLCM[(3 * gl* gl)  + pixels[idX] * gl] +  pixels[idX-cols-1], 1);
                         
+                    } */
+                    if(floorf((idX - blockDim.x-1)/(blockDim.x * blockDim.y))== floorf(idX /(blockDim.x * blockDim.y))){
+                        //d = 135
+                        atomicAdd( &subGLCM[(3 * gl* gl)  + pixels[idX] * gl] +  pixels[idX - blockDim.x-1], 1);
                     }
                    // assert(localIdX < 0); 
                 }

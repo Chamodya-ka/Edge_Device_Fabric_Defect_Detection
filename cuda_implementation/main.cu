@@ -76,7 +76,7 @@ int main(){
     GLCMComputation glcm = GLCMComputation();
     int* out = glcm.GetSubGLCM(img,1,1);
 
-    /*  for (int i =1 ; i < 5 ; i++){
+  /*     for (int i =1 ; i < 5 ; i++){
         for (int j = 8*8*(i-1) ; j < 8*8*i ; j++){
         
         if (j%8==0)
@@ -84,12 +84,14 @@ int main(){
         cout << out[i];
         } 
         cout << "\n";
-    }  */
-    int j = 10 << 6;
+    }   */
+     int j = 2 << 10;
     cout << j << endl;
     for (int i = 0 ; i < j ; i ++){
+        if (i%8==0)
+            cout << "\n";
         cout<<  *(out + i);
-    } 
+    }  
 
     
 //end testing
