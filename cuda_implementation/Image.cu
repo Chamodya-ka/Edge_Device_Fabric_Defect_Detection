@@ -1,7 +1,7 @@
 #include "Image.h"
 
 
-Image :: Image(vector<uint> pixels, unsigned int rows, unsigned int cols,
+Image :: Image(vector<int> pixels, unsigned int rows, unsigned int cols,
 unsigned int mingraylevel, unsigned int maxgraylevel){
     this->pixels = pixels;
     this->rows = rows;
@@ -10,7 +10,7 @@ unsigned int mingraylevel, unsigned int maxgraylevel){
     this->maxgraylevel = maxgraylevel;
 }
 
-vector<uint> Image :: getPixels(){
+vector<int> Image :: getPixels(){
     return pixels;
 }
 /* 

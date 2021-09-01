@@ -51,7 +51,7 @@ int main(){
         //cout << pixels[i] << endl;
     } 
 
-
+    //auto start  = chrono::high_resolution_clock::now();
     vector<int> cm(gl*gl,0);
 
     cudaMalloc(&d_pixels,bytes);
@@ -79,7 +79,7 @@ int main(){
  
     cudaFree(d_pixels);
 	cudaFree(d_cm);
-
+    
 
     return 0;
 }

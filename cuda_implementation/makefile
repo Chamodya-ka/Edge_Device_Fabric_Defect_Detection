@@ -1,7 +1,7 @@
 CC = "nvcc"
 
 PROJECT = cuda_implementation
-SRC = main.cu ImageLoader.cu Image.cu 
+SRC = main.cu Image.cu ImageLoader.cu GLCMComputation.cu
 OUT = build/
 LIBS = `pkg-config opencv --cflags --libs`
 

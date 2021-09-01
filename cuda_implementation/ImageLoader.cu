@@ -50,7 +50,7 @@ Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned 
     
 
     //im = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
-    vector<uint> pixels = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
+    vector<int> pixels = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
 
     cout<<"MATRIX TOTAL = "+to_string(im.total()) +"| pixels length = "+ to_string(pixels.size())<<endl;
     
@@ -86,12 +86,12 @@ Mat ImageLoader:: getQuantizedMat(Mat& img, unsigned int maxgraylevel, unsigned 
 }
 
 /* MAKE THIS QUANTIZE EFFICIENT */
- vector<uint> ImageLoader::quantize(Mat& img, unsigned int maxgraylevel, unsigned int inmaxlevel ,unsigned int inminlevel)
+ vector<int> ImageLoader::quantize(Mat& img, unsigned int maxgraylevel, unsigned int inmaxlevel ,unsigned int inminlevel)
 {
 
     
 
-    vector<uint> pixels;
+    vector<int> pixels;
     pixels.reserve(img.total());
     cout<<"AT INITIALIZATION SIZE =  " + to_string(pixels.size())<<endl;
     MatIterator_<uchar> it ;
@@ -99,7 +99,7 @@ Mat ImageLoader:: getQuantizedMat(Mat& img, unsigned int maxgraylevel, unsigned 
 
     for (it =  img.begin<uchar>();it != img.end<uchar>(); it++){
         uint intensity = *it;
-        uint newintensity = (uint)round( (intensity - inminlevel) * (maxgraylevel) / (double)(inmaxlevel-inminlevel) );
+        int newintensity = (int)round( (intensity - inminlevel) * (maxgraylevel) / (double)(inmaxlevel-inminlevel) );
         pixels.push_back(newintensity);
         c++;
     }

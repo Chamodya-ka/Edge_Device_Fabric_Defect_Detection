@@ -1,6 +1,8 @@
+#include "ImageLoader.h"
+#include "GLCMComputation.h"
+#include "Image.h"
 #include <stdio.h>
 #include <stdint.h>
-#include "ImageLoader.h"
 
 //#include <opencv2/opencv.hpp>
 //using namespace cv;
@@ -17,7 +19,7 @@ int main(){
     unsigned int  desiredgl = 7;
     Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl);
 
-    vector<uint> pixels = img.getPixels();
+    vector<int> pixels = img.getPixels();
     //vector<vector<uint8_t>> vector2d = img.get2dVector();
 
     cout << "matrix size "+to_string(img.get_rows() * img.get_cols())+" vector size = "+to_string(pixels.size()) << endl;
@@ -26,12 +28,12 @@ int main(){
     Mat dst = Mat(r,c, CV_8UC1 ,&pixels,c * sizeof(uint8_t));
 
     cout << "NEW MAT "+to_string(dst.rows * dst.cols) << endl;
-    cout <<dst.total() << endl;
-    cout <<dst.rows << endl;
-    cout <<dst.cols << endl;
-    cout <<dst.type() << endl;
-    cout <<dst.depth() << endl;
-    cout <<dst.channels() << endl;
+    cout << dst.total() << endl;
+    cout << dst.rows << endl;
+    cout << dst.cols << endl;
+    cout << dst.type() << endl;
+    cout << dst.depth() << endl;
+    cout << dst.channels() << endl;
 
 
     //used for testing
@@ -68,7 +70,28 @@ int main(){
     std::cout << "6 : " + to_string(six) << endl;
     std::cout << "7 : " + to_string(seven) << endl;  
     std::cout << "8 : " + to_string(eight) << endl; 
-    std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl;  
+    std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl; 
+    
+  
+    GLCMComputation glcm = GLCMComputation();
+    int* out = glcm.GetSubGLCM(img,1,1);
+
+    /*  for (int i =1 ; i < 5 ; i++){
+        for (int j = 8*8*(i-1) ; j < 8*8*i ; j++){
+        
+        if (j%8==0)
+            cout << "\n";
+        cout << out[i];
+        } 
+        cout << "\n";
+    }  */
+    int j = 10 << 6;
+    cout << j << endl;
+    for (int i = 0 ; i < j ; i ++){
+        cout<<  *(out + i);
+    } 
+
+    
 //end testing
 
 /*
@@ -78,6 +101,9 @@ int main(){
 
     For usage get images using camera
  */
+    
+
+
 
 
 
