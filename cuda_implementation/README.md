@@ -31,7 +31,8 @@ The 1D image vector obtained from the ImageLoader is fed into the GLCMComputatio
 
 #####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);```
 Kernel used to calculate sub GLCMs will be extended to calculate the features. Hence this function will be only used for testing and demonstration.
-#####params
+
+##### params
 ```img``` - Image object
 
 ```d``` , ```angle``` -  Currently not used.
