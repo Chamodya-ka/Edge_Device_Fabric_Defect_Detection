@@ -30,7 +30,7 @@ These pixel values are stored in an vector of the Image object.
 The 1D image vector obtained from the ImageLoader is fed into the GLCMComputation object. GLCMComputation::GetSubGLCM(params) returns the GLCMS calculated for 32x32 pixels^2 sub windows and it is used for demonstration. 4 Co-occurence matrices are calculated for ```theta=0``` ```theta=45``` ```theta=90``` ```theta=135```.Hence the resulting array would contain 64x64x4 sub GLCMs. These sub GLCMs will be used to calculate the Haralick features to obtain a feature vector.
 
 #####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);```
-Kernel used to calculate sub GLCMs will be extended to calculate the features. Hence this function will be only used for testing and demonstration.
+Kernel used to calculate sub GLCMs will be extended to calculate the features. Hence this function will be only used for testing and demonstration. (96-130 ms)
 
 ##### params
 ```img``` - Image object
