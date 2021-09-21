@@ -1,12 +1,8 @@
 #include "GLCMComputation.h"
 #include <assert.h>
+#include "FeatureCalculation.cu"
 
-DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
-    /* 
-        subGLCM - 4 x GL x GL
-        feature -> float[5]
-        id - LocalThreadID (0,Gl*GL*4-1)
-     */
+/* DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
     __shared__ float a,b,c,d;
     switch (id)
     {
@@ -46,7 +42,7 @@ DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
     if (id<=0)
         feature[id] = (float)(a+b+c+d)/4;
 
-}
+} */
 
 GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, float *d_feat, const int N,const int rows, const int cols
             , int gl){
@@ -97,15 +93,19 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, float *d_feat, 
                 
                 if (localIdX< gl * gl * 4){
                     
-                    //assert(threadIdx.x < 2); 
-                    //CHECK AGAIN
-                    //assert(threadIdx.x + threadIdx.y * blockDim.x < 256);
-                    //printf("===========================");
-                    EnergyFeature(localIdX,gl,subMat,feature);
+                    //COMMENTED TO TEST CONTRAST
+                     /* EnergyFeature(localIdX,gl,subMat,feature);
                     __syncthreads();
                     if (localIdX<=0){
                         //printf("%f",feature[localIdX]);
-                        d_feat[blockID] = (float)featureVector[localIdX];
+                        d_feat[blockID + 0] = (float)featureVector[localIdX];
+                    }  */
+
+                    ContrastFeature(localIdX,gl,subMat,feature);
+                    __syncthreads();
+                    if (localIdX==1){
+                        //printf("%f",feature[localIdX]);
+                        d_feat[blockID + 0] = (float)featureVector[localIdX];
                     }
                     //printf("%d\f",&feature); // LOOKS WRONG CHECK
                     d_out[(blockIdx.x + blockIdx.y * gridDim.x) * gl * gl * 4 + localIdX] = subGLCM[localIdX];
