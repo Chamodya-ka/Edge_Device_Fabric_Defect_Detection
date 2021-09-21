@@ -85,14 +85,16 @@ int main(){
         } 
         cout << "\n";
     }   */
-     int j = 2 << 10;
+
+
+    /* int j = 2 << 10;
     cout << j << endl;
     for (int i = 0 ; i < j ; i ++){
         if (i%8==0)
             cout << "\n";
         cout<<  *(out + i);
     }  
-
+ */
     
 //end testing
 

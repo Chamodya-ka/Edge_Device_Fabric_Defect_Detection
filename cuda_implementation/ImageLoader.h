@@ -21,8 +21,8 @@ public:
     //Image readImage(int index);
 
 private:
-
-    static Mat readImageFromFile(string filename);
+    
+    static Mat readImageFromFile(string filename,int d_size=2048);
     //static Mat toGrayScale(const Mat& image);
     static vector<int> quantize(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
     static Mat getQuantizedMat(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);

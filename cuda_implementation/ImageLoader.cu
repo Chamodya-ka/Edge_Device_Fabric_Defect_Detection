@@ -3,7 +3,9 @@
 /* 
     Currently using opencv without cuda
  */
-Mat ImageLoader::readImageFromFile(string filename){
+
+
+Mat ImageLoader::readImageFromFile(string filename,int d_size){
 
     Mat image;
 
@@ -31,9 +33,11 @@ Mat ImageLoader::readImageFromFile(string filename){
     cout <<  "Channels - " << image.channels() << std::endl ;
     cout <<  "Type - " << image.type() << std::endl ;
     cout <<  "Depth - " << image.depth() << std::endl ;
-    
-    return image;
 
+    Mat resized;
+    cv::resize(image,resized,Size(d_size,d_size),INTER_LINEAR);    
+    image.release();
+    return resized;
 }
 
 Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned int inminlevel, unsigned int maxgraylevel){
@@ -57,11 +61,11 @@ Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned 
     
     /* Used to generate test iamge */
 
-    //im = getQuantizedMat(im, maxgraylevel, maxVal, minVal);
-    //normalize(im, im, 0, 255, NORM_MINMAX,CV_8UC1);
-    //imshow("New converted mat",im);
-    //waitKey(0);
-    //imwrite("../testimg/gradientresult.png", im);
+    /* im = getQuantizedMat(im, maxgraylevel, maxVal, minVal);
+    normalize(im, im, 0, 255, NORM_MINMAX,CV_8UC1);
+    imshow("New converted mat",im);
+    waitKey(0);
+    imwrite("../testimg/Galaxytest.png", im); */
     
     Image image = Image(pixels, im.rows, im.cols, 0, maxgraylevel);
     return image;

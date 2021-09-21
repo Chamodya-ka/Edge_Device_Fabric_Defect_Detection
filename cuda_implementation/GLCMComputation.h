@@ -1,5 +1,6 @@
 #define GLOBAL __global__ 
 #define HOSTDEV __host__ __device__
+#define DEV __device__
 #ifndef GLCMCOMPUTATION
 #define GLCMCOMPUTATION
 #include "Image.h"
