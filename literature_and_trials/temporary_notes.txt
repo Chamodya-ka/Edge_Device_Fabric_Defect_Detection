@@ -1,0 +1,5 @@
+-Currently one kernal performs all the feature calculations
+-Using different kernals for each feature might be better performing. (check)
+	+ will reduce weight of each thead lead to low blocked time
+	+ will be able to simultaniously calculate all features, currently it is in line
+-It depends. Usually the overhead in loading data from global memory over bottlenecks the performance.(forum answer)
