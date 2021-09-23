@@ -71,5 +71,6 @@ When threads update a single memory location Atomic functions are used to avoid 
 In the feature calculation kernels, the concept of parellel reductions were used maximize performance. (Need to check if this can be adopted in the kernel calculating SUB GLCMs as well)
 ##### Division by 0
 Correlation feature calculation includes a step to divide by the σ^2 (standard deviation of the sub GLCM squared). For cases such as a monotone images, the GLCM will consist of mostly 0s. Actual reason not yet found, hence for now small value is added ```pow(stdd[(int) floorf(id/(gl*gl))] + 0.0000001,2); ```
-
+##### Failed test on Tx2
+The feature extraction kernels CONTRAST and CORRELATION cause errors. "Too many resources requested" Couldn't find a solution yet.
 
