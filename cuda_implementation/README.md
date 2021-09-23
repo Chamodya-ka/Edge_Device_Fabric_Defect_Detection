@@ -65,8 +65,11 @@ This is an extension to the above mentioned function. The kernel used to calcula
 Time spent by blocked threads during synchronized operations are significant. The trial implementation done last week which computed a **single** GLCM on the global memory for a 1250x1250 image requred ```~0.96ms```. This is due to high number of frequently occuring data patters written to a small space (8x8 space). 
 To overcome this issue in computing the sub GLCMs, each sub grid of the image that was processed by a block of threads was given an 8x8x4 grid in the shared memory for the 4 resultant GLCMs. By doing this the global memory access were reduced as well.
 
+12.09
 ##### Limitations Using Atomic Functions
 When threads update a single memory location Atomic functions are used to avoid race conditions because of this threads spend majority of their time blocked.
 In the feature calculation kernels, the concept of parellel reductions were used maximize performance. (Need to check if this can be adopted in the kernel calculating SUB GLCMs as well)
+##### Division by 0
+Correlation feature calculation includes a step to divide by the σ^2 (standard deviation of the sub GLCM squared). For cases such as a monotone images, the GLCM will consist of mostly 0s. Actual reason not yet found, hence for now small value is added ```pow(stdd[(int) floorf(id/(gl*gl))] + 0.0000001,2); ```
 
 
