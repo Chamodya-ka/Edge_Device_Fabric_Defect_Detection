@@ -38,11 +38,35 @@ Kernel used to calculate sub GLCMs will be extended to calculate the features. H
 ```d``` , ```angle``` -  Currently not used.
 
 ##### returns
-```out``` - pointer to the array containing the 64x64x4 sub GLCMS   
+```out``` - pointer to the array containing the 64x64x4 sub GLCMS  
+
+## Computing Haralick Texture Features from sub-GLCMs
+
+<img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/main/cuda_implementation/images/FeatureCalculation.jpg" width="600">
+
+This is an extension to the above mentioned function. The kernel used to calculate the sub GLCMs was modified to calculate the features. The sub GLCMs array is not required hence it will be discarded later (Not yet discarded for testing purposed). The produced 4 sub GLCMs from 64x64 blocks of the image is passed onto 5 device kernels to calculate the 5 texture features. Each block uses a ```__shared__ float[5]``` to store the feature vectors. This shared memory array is copied on to a ```float [64 x 64 x 5]``` array in global memory.
+
+#####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);``` (Needs name change)
+
+##### params
+```img``` - Image object
+
+```d``` , ```angle``` -  Currently not used.
+
+##### returns
+```out``` - pointer to the array containing the 64x64x5 feature vectors // 1 line change not yet implemented
+
+
+
 
 #### Challenges
+
 ##### GLCM calculations
 Time spent by blocked threads during synchronized operations are significant. The trial implementation done last week which computed a **single** GLCM on the global memory for a 1250x1250 image requred ```~0.96ms```. This is due to high number of frequently occuring data patters written to a small space (8x8 space). 
 To overcome this issue in computing the sub GLCMs, each sub grid of the image that was processed by a block of threads was given an 8x8x4 grid in the shared memory for the 4 resultant GLCMs. By doing this the global memory access were reduced as well.
+
+##### Limitations Using Atomic Functions
+When threads update a single memory location Atomic functions are used to avoid race conditions because of this threads spend majority of their time blocked.
+In the feature calculation kernels, the concept of parellel reductions were used maximize performance. (Need to check if this can be adopted in the kernel calculating SUB GLCMs as well)
 
 
