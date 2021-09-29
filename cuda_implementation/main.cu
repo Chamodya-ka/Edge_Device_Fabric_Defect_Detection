@@ -3,17 +3,13 @@
 #include "Image.h"
 #include <stdio.h>
 #include <stdint.h>
-
-//#include <opencv2/opencv.hpp>
-//using namespace cv;
-/* 
-    Main method  --
- */
+#include <chrono>
+using namespace std::chrono;
 using namespace std;
 
 int main(){
-
-    string fname = "../testimg/gradient.png";
+    auto start = high_resolution_clock::now();
+    string fname = "../testimg/1.bmp";
     unsigned int  maxgl = 255;
     unsigned int  mingl = 0;
     unsigned int  desiredgl = 7;
@@ -74,6 +70,7 @@ int main(){
     
   
     GLCMComputation glcm = GLCMComputation();
+    
     int* out = glcm.GetSubGLCM(img,1,1);
     int j = 2 << 10;
     cout << j << endl;
@@ -84,11 +81,11 @@ int main(){
         cout<<  *(out + i);
     }  */
     //BLOCKS*BLOCKS*gl*gl*4
-    for (int k = 60*64*8*8*4; k < 61*64*8*8*4  ; k ++){
+   /*  for (int k = 60*64*8*8*4; k < 61*64*8*8*4  ; k ++){
         if (k%8==0)
             cout << "\n";
         cout<<  out[k];
-    }    
+    }  */   
     
     for (int i =1 ; i < 5 ; i++){
         for (int j = 8*8*(i-1) ; j < 8*8*i ; j++){
@@ -99,8 +96,10 @@ int main(){
         } 
         cout << "\n";
     }   
-
-
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+ 
+    cout << duration.count() << endl;
      
     
  

@@ -10,50 +10,9 @@ NOTE (i,j) of the GLCM should start with 1.
 In this case I have used indices of an array as i and j. Therefore +1 to both i and j
 
  */
-/* DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
-    __shared__ float a,b,c,d;
-    switch (id)
-    {
-    case 0:
-        a=0;
-        break;
-    case 1:
-        b=0;
-    break;
-    case 2:
-        c=0;
-    break;
-    case 3:
-        d=0;
-    break;
-    
-    default:
-        break;
-    }
-
-    __syncthreads();
-    
-    if (id<gl*gl){
-        atomicAdd(&a,pow(subGLCM[id],2));
-    }
-    else if(id<gl*gl*2){
-        atomicAdd(&b,pow(subGLCM[id],2));
-    }
-    else if(id<gl*gl*3){
-        atomicAdd(&c,pow(subGLCM[id],2));
-    }
-    else if(id<gl*gl*4){
-        atomicAdd(&d,pow(subGLCM[id],2));
-    }
-    //printf("%d",a);
-    __syncthreads();
-    if (id<=0)
-        feature[id] = (float)(a+b+c+d)/4;
-
-}  */
 
 DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
-    __shared__ float energyFeature;
+    
     __shared__ float engSubGLCM[8 * 8 * 4];
     engSubGLCM[id] = pow(subGLCM[id],2);
      __syncthreads();
@@ -91,7 +50,7 @@ DEV void EnergyFeature(int id, int gl, int* subGLCM, float* feature){
 
 DEV void ContrastFeature(int id, int gl, int* subGLCM, float* feature){
     __shared__ float conSubGLCM[8 * 8 * 4];
-    __shared__ float contrastFeature;
+
     conSubGLCM[id] = pow(subGLCM[id],2) * pow( floorf(id/gl) - gl * floorf(id/(gl*gl)) - fmodf(id,gl) , 2 );
     __syncthreads();
     if(fmodf(id,2)==0){
@@ -127,7 +86,7 @@ DEV void ContrastFeature(int id, int gl, int* subGLCM, float* feature){
 DEV void EntropyFeature(int id, int gl, int* subGLCM, float* feature){
 
     __shared__ float entSubGlCM[8 * 8 * 4];
-    __shared__ float entropyFeature;
+
     /*  CHECK HERE LOG(0) CAUSE NAN THEREFORE ADDED SMALL NUMBER */
     entSubGlCM[id] = subGLCM[id] *  logf(subGLCM[id]+0.00001);
     __syncthreads();
@@ -166,7 +125,7 @@ DEV void EntropyFeature(int id, int gl, int* subGLCM, float* feature){
 DEV void HomogeneityFeature(int id, int gl, int* subGLCM, float* feature){
 
     __shared__ float homSubGlCM[8 * 8 * 4];
-    __shared__ float homogeneityFeature;
+
     homSubGlCM[id] = subGLCM[id] *  (1 / (1 + pow( floorf(id/gl) - floorf(id/(gl*gl)) - fmodf(id,gl) , 2)) ); 
     __syncthreads();
     if(fmodf(id,2)==0){
@@ -201,13 +160,11 @@ DEV void HomogeneityFeature(int id, int gl, int* subGLCM, float* feature){
 }
 
 DEV void CorrelationFeature(int id, int gl, int* subGLCM, float* feature){
-    __shared__ float mean[4],stdd[4], corr[4], corrFeature;
+    __shared__ float mean[4],stdd[4];
     
     if ( id < 4){
         mean[id] = 0;
         stdd[id] = 0;
-        corr[id] = 0;
-        corrFeature=0;
     }
     //USING REDUCTIONS 
     __shared__ int meanSubGLCM[8 * 8 * 4];
@@ -241,7 +198,25 @@ DEV void CorrelationFeature(int id, int gl, int* subGLCM, float* feature){
     __syncthreads();
     if (fmodf(id,64)==0){
         meanSubGLCM[id] += meanSubGLCM[id+32];
-        mean[ (int) floorf(id/gl*gl)] = meanSubGLCM[id];
+        //mean[ (int) floorf(id/gl*gl)] = meanSubGLCM[id];
+    }
+    __syncthreads();
+    switch (id)
+    {
+    case 0:
+        mean[id] = meanSubGLCM[64 * id];
+        break;
+    case 1:
+        mean[id] = meanSubGLCM[64 * id];
+        break;
+    case 2:
+        mean[id] = meanSubGLCM[64 * id];
+        break;
+    case 3:
+        mean[id] = meanSubGLCM[64 * id];
+        break;    
+    default:
+        break;
     }
     __syncthreads();
     
@@ -270,8 +245,28 @@ DEV void CorrelationFeature(int id, int gl, int* subGLCM, float* feature){
     __syncthreads();
     if (fmodf(id,64)==0){
         stddSubGLCM[id] += stddSubGLCM[id+32];
-        stdd[(int) floorf(id/64)] = pow(stddSubGLCM[id],0.5);
+        //stdd[(int) floorf(id/64)] = pow(stddSubGLCM[id],0.5);
     }
+
+    __syncthreads();
+   switch (id)
+    {
+    case 0:
+        stdd[id] = pow(stddSubGLCM[id*64],0.5);
+        break;
+    case 1:
+        stdd[id] = pow(stddSubGLCM[id*64],0.5);
+    break;
+    case 2:
+        stdd[id] = pow(stddSubGLCM[id*64],0.5);
+    break;
+    case 3:
+        stdd[id] = pow(stddSubGLCM[id*64],0.5);
+    break;
+    default:
+        break;
+    }
+    __syncthreads();
     /* CHECK THIS DIV BY 0 */
     corrSubGLCM[id] = subGLCM[id] * ((floorf(id/gl) - gl * floorf(id/(gl*gl)) - mean[(int) floorf(id/(gl*gl))] + 1) * 
                                             (fmodf(id,gl) - mean[(int) floorf(id/(gl*gl))] +1)) / 

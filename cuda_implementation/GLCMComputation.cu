@@ -139,11 +139,11 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     cudaFree(d_out);
     cudaFree(d_feat);
     for(int h =0 ; h < BLOCKS*BLOCKS;h+=5){
-        cout<< ("%f",h_feat[h+0])<< " ";
-	cout<< ("%f",h_feat[h+1])<< " ";
-	cout<< ("%f",h_feat[h+2])<< " ";
-	cout<< ("%f",h_feat[h+3])<< " ";
-	cout<< ("%f",h_feat[h+4])<< " ";
+        cout<< h_feat[h+0]<< " ";
+	cout<< h_feat[h+1]<< " ";
+	cout<< h_feat[h+2]<< " ";
+	cout<< h_feat[h+3]<< " ";
+	cout<< h_feat[h+4]<< " ";
 	cout<<"\n";
 	cout<<h<<"\n";
     }  
