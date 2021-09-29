@@ -60,13 +60,13 @@ Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned 
     
     
     /* Used to generate test iamge */
-
-    /* im = getQuantizedMat(im, maxgraylevel, maxVal, minVal);
+    /*
+    im = getQuantizedMat(im, maxgraylevel, maxVal, minVal);
     normalize(im, im, 0, 255, NORM_MINMAX,CV_8UC1);
-    imshow("New converted mat",im);
+    //imshow("New converted mat",im);
     waitKey(0);
-    imwrite("../testimg/Galaxytest.png", im); */
-    
+    imwrite("../testimg/Enlarged.png", im); 
+    */
     Image image = Image(pixels, im.rows, im.cols, 0, maxgraylevel);
     return image;
 }

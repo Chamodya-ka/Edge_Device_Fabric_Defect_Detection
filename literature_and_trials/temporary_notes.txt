@@ -3,3 +3,7 @@
 	+ will reduce weight of each thead lead to low blocked time
 	+ will be able to simultaniously calculate all features, currently it is in line
 -It depends. Usually the overhead in loading data from global memory over bottlenecks the performance.(forum answer)
+
+
+
+GL = 7 .....

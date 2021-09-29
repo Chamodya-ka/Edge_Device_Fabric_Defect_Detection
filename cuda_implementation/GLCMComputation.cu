@@ -101,7 +101,9 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     int* host_pixels = &v[0];
     int rows = img.get_rows();
     int cols = img.get_cols();
-    int gl = img.get_maxGL();
+    //int gl = img.get_maxGL();
+	int gl = 8;
+    cout<< gl << endl;
     int N = rows * cols;
 
     size_t bytes = rows * cols * sizeof(int);
@@ -132,14 +134,20 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     cudaDeviceSynchronize();
     cudaMemcpy(h_out, d_out, BLOCKS*BLOCKS*gl*gl*intsize*4, cudaMemcpyDeviceToHost );
     cudaMemcpy(h_feat, d_feat, BLOCKS*BLOCKS*floatsize*5, cudaMemcpyDeviceToHost );
-    
+     
     cudaFree(d_pixels);
     cudaFree(d_out);
     cudaFree(d_feat);
-     for(int h =0 ; h < BLOCKS*BLOCKS*5;h++){
-        cout<< ("%f",h_feat[h])<< " ";
-    } 
-
+    for(int h =0 ; h < BLOCKS*BLOCKS;h+=5){
+        cout<< ("%f",h_feat[h+0])<< " ";
+	cout<< ("%f",h_feat[h+1])<< " ";
+	cout<< ("%f",h_feat[h+2])<< " ";
+	cout<< ("%f",h_feat[h+3])<< " ";
+	cout<< ("%f",h_feat[h+4])<< " ";
+	cout<<"\n";
+	cout<<h<<"\n";
+    }  
+     
     return h_out;
 }
 

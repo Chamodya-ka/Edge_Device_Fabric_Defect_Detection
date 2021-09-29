@@ -75,26 +75,35 @@ int main(){
   
     GLCMComputation glcm = GLCMComputation();
     int* out = glcm.GetSubGLCM(img,1,1);
-
-  /*     for (int i =1 ; i < 5 ; i++){
-        for (int j = 8*8*(i-1) ; j < 8*8*i ; j++){
-        
-        if (j%8==0)
-            cout << "\n";
-        cout << out[i];
-        } 
-        cout << "\n";
-    }   */
-
-
-    /* int j = 2 << 10;
+    int j = 2 << 10;
     cout << j << endl;
+/*
     for (int i = 0 ; i < j ; i ++){
         if (i%8==0)
             cout << "\n";
         cout<<  *(out + i);
-    }  
- */
+    }  */
+    //BLOCKS*BLOCKS*gl*gl*4
+    for (int k = 60*64*8*8*4; k < 61*64*8*8*4  ; k ++){
+        if (k%8==0)
+            cout << "\n";
+        cout<<  out[k];
+    }    
+    
+    for (int i =1 ; i < 5 ; i++){
+        for (int j = 8*8*(i-1) ; j < 8*8*i ; j++){
+        
+            if (j%8==0)
+                cout << "\n";
+            cout << out[j];
+        } 
+        cout << "\n";
+    }   
+
+
+     
+    
+ 
     
 //end testing
 
