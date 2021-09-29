@@ -91,7 +91,7 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl){
     cudaFree(d_feat);
     cudaFree(d_subGLCM);
 
-     for(int h =0 ; h < BLOCKS;h++){
+     /*for(int h =0 ; h < BLOCKS;h++){
         
         std:: cout << h_feat[h*5 + 0] << " ";
         std:: cout << h_feat[h*5 + 1] << " ";
@@ -101,7 +101,7 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl){
         std:: cout << h << "\n";
         //std:: cout << h << " ";
         
-    }  
+    }  */
 
     return h_feat;
 
