@@ -72,4 +72,13 @@ In the feature calculation kernels, the concept of parellel reductions were used
 ##### Division by 0
 Correlation feature calculation includes a step to divide by the σ^2 (standard deviation of the sub GLCM squared). For cases such as a monotone images, the GLCM will consist of mostly 0s. Actual reason not yet found, hence for now small value is added ```pow(stdd[(int) floorf(id/(gl*gl))] + 0.0000001,2); ```
 
+30.09
+##### Requested too many resources on Jetson-TX2
+The existing implmentation that is an extension to the GLCM calculating kernel will reduce the memory copy overheads (device to host to device not needed). Due to this reason the kernel becomes very long and resource extensive. Upon testing on the Jetson it threw a "Too many resources requested expection". To work around this issue I tried spliting the single kernel to two kernels at the expense of 2 extra data transfers between host and device. It did work as intended but it seems to take more time (significanlt time consumed by the feature extraction kernel).
+##### Too much time consumption by feature extraction kernel
+The feature extraction kernel was implemented to compute each feature serially. I thought that this could be the issue, hence implemented them to run concurrently  using streams. Results should some improvement but not sufficient. I will be looking at ways to optimize the feature extraction part before the mid-evaluations, and work on the ML part afterwards.
+##### RISK : a graylevel of 8 might not be sufficient.
+This decision was based on observation. The resulting GLCMs for (32x32 pixels of a real example) only consisted mainly of 2 quantized gray levels (like 6 and 7) this might cause for inaccuracy. I will make alterations to increase the number of gray levels to 16 or 32. Upon checking final results this can be decided on.
+##### Misleading exception
+Without proper degubbing tools, the CUDA runtime throws out the last expection that occurs. Due to this reason I spent almost 2 days to fix a bug caused by an indexing error. Using ```cud-memcheck``` any out of bounds exceptions can be located.
 
