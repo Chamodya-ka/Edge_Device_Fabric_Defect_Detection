@@ -79,12 +79,20 @@ GLOBAL void ContrastFeature(int gl, int* subGLCM, float* feature){
     __syncthreads();
     if(fmodf(id,64)==0){
         conSubGLCM[id]+=conSubGLCM[id+32];
-        //atomicAdd(&contrastFeature, conSubGLCM[id]/4); 
+        
     }
     __syncthreads();
-    if (id==1){
-        feature[blockID]=( conSubGLCM[0] + conSubGLCM[64] + conSubGLCM[128] + conSubGLCM[192])/4;
+	if(fmodf(id,128)==0){
+        conSubGLCM[id]+=conSubGLCM[id+64];
     }
+	__syncthreads();
+	if(fmodf(id,256)==0){
+        conSubGLCM[id]+=conSubGLCM[id+128];
+		feature[blockID] = conSubGLCM[id]/4;
+    }
+    //if (id==1){
+    //   feature[blockID]=( conSubGLCM[0] + conSubGLCM[64] + conSubGLCM[128] + conSubGLCM[192])/4;
+    //}
 } 
 
 GLOBAL void EntropyFeature(int gl, int* subGLCM, float* feature){
