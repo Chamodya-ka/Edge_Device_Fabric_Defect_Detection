@@ -32,7 +32,7 @@ GLOBAL void EnergyFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float engSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    engSubGLCM[id] = pow(subGLCM[i],2) + pow(subGLCM[i+blockDim.x] , 2);
+    engSubGLCM[id] = __powf(subGLCM[i],2) + __powf(subGLCM[i+blockDim.x] , 2);
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -56,8 +56,8 @@ GLOBAL void ContrastFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float conSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    conSubGLCM[id] = subGLCM[i] * pow( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) + 
-                                subGLCM[i+blockDim.x] * pow( ((id+blockDim.x)%gl - floorf((id+blockDim.x)/gl) + gl * floorf((id+blockDim.x)/(gl*gl))) ,2);
+    conSubGLCM[id] = subGLCM[i] * __powf( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) + 
+                                subGLCM[i+blockDim.x] * __powf( ((id+blockDim.x)%gl - floorf((id+blockDim.x)/gl) + gl * floorf((id+blockDim.x)/(gl*gl))) ,2);
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -106,8 +106,8 @@ GLOBAL void HomogeneityFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float homSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    homSubGLCM[id] = subGLCM[i] / ( 1 +  pow( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) ) + 
-                                subGLCM[i+blockDim.x] / ( 1 +  pow( (id+blockDim.x)%gl - floorf(id+blockDim.x/gl) + gl * floorf(id+blockDim.x/(gl*gl)) ,2) );
+    homSubGLCM[id] = subGLCM[i] / ( 1 +  __powf( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) ) + 
+                                subGLCM[i+blockDim.x] / ( 1 +  __powf( (id+blockDim.x)%gl - floorf(id+blockDim.x/gl) + gl * floorf(id+blockDim.x/(gl*gl)) ,2) );
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -204,10 +204,10 @@ GLOBAL void CalculateStddX(int gl,int* SubGLCM, int* meanX,float* stddX){
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
     unsigned int id = threadIdx.x;
     
-    localGLCM1[id] = SubGLCM[i] * pow( meanX[blockIdx.x * 4 + 0] - id%gl  - 1 ,2);
-    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * pow( meanX[blockIdx.x * 4 + 1] - id%gl  - 1 ,2);
-    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * pow( meanX[blockIdx.x * 4 + 2] - id%gl  - 1 ,2);
-    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * pow( meanX[blockIdx.x * 4 + 3] - id%gl  - 1 ,2);
+    localGLCM1[id] = SubGLCM[i] * __powf( meanX[blockIdx.x * 4 + 0] - id%gl  - 1 ,2);
+    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __powf( meanX[blockIdx.x * 4 + 1] - id%gl  - 1 ,2);
+    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __powf( meanX[blockIdx.x * 4 + 2] - id%gl  - 1 ,2);
+    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __powf( meanX[blockIdx.x * 4 + 3] - id%gl  - 1 ,2);
     
     if (id < 32) {
         warpReduce(localGLCM1, id); 
@@ -234,10 +234,10 @@ GLOBAL void CalculateStddY(int gl,int* SubGLCM, int* meanY,float* stddY){
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
     unsigned int id = threadIdx.x;
     
-    localGLCM1[id] = SubGLCM[i] * pow( meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * pow( meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * pow( meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * pow( meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
+    localGLCM1[id] = SubGLCM[i] * __powf( meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
+    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __powf( meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
+    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __powf( meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
+    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __powf( meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
     
     if (id < 32) {
         warpReduce(localGLCM1, id); 
@@ -273,9 +273,9 @@ GLOBAL void CorrelationFeature2(int gl, int* subGLCM, float* feature, int* meanX
                         /pow((stddX[value_index] * stddY[value_index]),0.5)
                         +  subGLCM[i+blockDim.x] * ( floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2] ) * (id_step%gl + 1 - meanX[value_index+2])
                         /pow((stddX[value_index+2] * stddY[value_index+2]),0.5); */
-    corSubGLCM[id] = subGLCM[i] * pow(floorf(id/gl) - gl * floorf(id/gl*gl) + 1 - meanY[value_index] ,2)
+    corSubGLCM[id] = subGLCM[i] * __powf(floorf(id/gl) - gl * floorf(id/gl*gl) + 1 - meanY[value_index] ,2)
                         /stddX[value_index]
-                        +  subGLCM[i+blockDim.x] * pow(floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2],2)
+                        +  subGLCM[i+blockDim.x] * __powf(floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2],2)
                         /stddX[value_index+2];
                                 
      __syncthreads();
