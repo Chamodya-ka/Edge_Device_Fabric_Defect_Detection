@@ -17,12 +17,13 @@ class ImageLoader{
 
 public:
 
-    static Image readImage(string filename, unsigned int inmaxlevel =255 , unsigned int inminlevel= 0, unsigned int maxgraylevel = 7);
+    static Image readImage(string filename, unsigned int inmaxlevel =255 , unsigned int inminlevel= 0, unsigned int maxgraylevel = 7,
+                            unsigned int d_sizex = 2048, unsigned int d_sizey = 2048);
     //Image readImage(int index);
 
 private:
     
-    static Mat readImageFromFile(string filename,int d_size=2048);
+    static Mat readImageFromFile(string filename,unsigned int d_sizex, unsigned int d_sizey);
     //static Mat toGrayScale(const Mat& image);
     static vector<int> quantize(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);
     static Mat getQuantizedMat(Mat& image, unsigned int maxgraylevel ,unsigned int inmaxgraylevel,unsigned int inmingraylevel);

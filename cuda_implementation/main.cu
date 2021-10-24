@@ -22,14 +22,14 @@ int main(){
     unsigned int  maxgl = 255;
     unsigned int  mingl = 0;
     unsigned int  desiredgl = 7;
-    Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl);
-
+    Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,2448,2048);
+    uint r = img.get_rows();
+    uint c = img.get_cols(); 
     /*vector<int> pixels = img.getPixels();
     //vector<vector<uint8_t>> vector2d = img.get2dVector();
 
     cout << "matrix size "+to_string(img.get_rows() * img.get_cols())+" vector size = "+to_string(pixels.size()) << endl;
-    uint r = img.get_rows();
-    uint c = img.get_cols(); 
+ 
     Mat dst = Mat(r,c, CV_8UC1 ,&pixels,c * sizeof(uint8_t));
     
     cout << "NEW MAT "+to_string(dst.rows * dst.cols) << endl;
@@ -98,7 +98,7 @@ int main(){
  
     cout << "\n";
 
-    float* h = FeatureComputation::getFeatures(out,8);
+    float* h = FeatureComputation::getFeatures(out,8,r,c);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
  

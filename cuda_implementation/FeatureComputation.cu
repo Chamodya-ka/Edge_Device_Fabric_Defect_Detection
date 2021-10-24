@@ -12,63 +12,18 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-/*
-GLOBAL void computeFeatures(int* d_subGLCM , float* d_feat,int gl){
-    
-    int blockID = blockIdx.x;
-    int idX = blockID * blockDim.x + threadIdx.x;
-    int localIdX = threadIdx.x;
-
-    __shared__ int subGLCMs[8 * 8 * 4];
-    __shared__ float features[5];
 
 
-    if (localIdX<gl*gl*4){
-        subGLCMs[localIdX] = d_subGLCM[idX];    
-    }
-
-    //subGLCMs[localIdX] = d_subGLCM[localIdX];
-    __syncthreads();
-    
-    if (localIdX< gl*gl*4){
-        EnergyFeature(localIdX,gl,subGLCMs,features);
-        ContrastFeature(localIdX,gl,subGLCMs,features);
-        EntropyFeature(localIdX,gl,subGLCMs,features);
-        HomogeneityFeature(localIdX,gl,subGLCMs,features);
-        CorrelationFeature(localIdX,gl,subGLCMs,features);
-    }
-    __syncthreads();
-    switch (localIdX)
-    {
-    case 0:
-        d_feat[ 5 * blockID + localIdX] = features[localIdX];
-        break;
-    case 1:
-        d_feat[ 5 * blockID + localIdX] = features[localIdX];
-    break;
-    case 2:
-        d_feat[ 5 * blockID + localIdX] = features[localIdX];
-    break;
-    case 3:
-        d_feat[ 5 * blockID + localIdX] = features[localIdX];
-    break;
-    case 4:
-        d_feat[ 5 * blockID + localIdX] = features[localIdX];
-    break;
-    default:
-        break;
-    }
-
-}*/
-
-
-float* FeatureComputation::getFeatures(int* subGLCM,int gl){
+float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols){
     float* h_feat;
     //float* d_feat;
     //int* d_subGLCM;
     size_t intsize = sizeof(int);
     size_t floatsize = sizeof(float);
-    int N = 64 * 64; // Number of blocks per image
+	int blocksX = rows/16;
+	int blocksY = cols/16;
+	int N = blocksX * blocksY;
+    //int N = 64 * 64; // Number of blocks per image
     //int bytes = 4 * gl * gl * N * intsize;
 	int num_intermediates = 4 * N;
 	// ADDED HERE
@@ -162,7 +117,7 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl){
 
 
  	int THREADS = gl * gl * 2; // HALF THREADS
-    int BLOCKS =  4096  ;//( gl * gl * 4 * N + THREADS -1 )/ THREADS;
+    int BLOCKS =  N  ;//( gl * gl * 4 * N + THREADS -1 )/ THREADS;
 
 	dim3 intermediateTHREADS(THREADS/2);
 	dim3 threads(THREADS);

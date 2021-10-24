@@ -5,7 +5,7 @@
  */
 
 
-Mat ImageLoader::readImageFromFile(string filename,int d_size){
+Mat ImageLoader::readImageFromFile(string filename,unsigned int d_sizex, unsigned int d_sizey){
 
     Mat image;
 
@@ -35,19 +35,20 @@ Mat ImageLoader::readImageFromFile(string filename,int d_size){
     cout <<  "Depth - " << image.depth() << std::endl ;
 
     Mat resized;
-    cv::resize(image,resized,Size(d_size,d_size),INTER_LINEAR);    
+    cv::resize(image,resized,Size(d_sizex,d_sizey),INTER_LINEAR);    
     image.release();
     return resized;
 }
 
-Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned int inminlevel, unsigned int maxgraylevel){
+Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned int inminlevel, unsigned int maxgraylevel,
+                                unsigned int d_sizex, unsigned int d_sizey){
     double minVal; 
     double maxVal; 
     Point minLoc; 
     Point maxLoc;
 
     
-    Mat im = readImageFromFile(filename);
+    Mat im = readImageFromFile(filename, d_sizex,d_sizey);
     minMaxLoc( im, &minVal, &maxVal, &minLoc, &maxLoc );
     cout <<  "Max pixel - " << maxVal << std::endl ;
     cout <<  "Min pixel - " << minVal << std::endl ;

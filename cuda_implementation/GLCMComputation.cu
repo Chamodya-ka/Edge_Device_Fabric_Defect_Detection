@@ -82,18 +82,22 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     //size_t floatsize = sizeof(float);
     
 
-    int THREADS = 32;
+    int THREADS = 16;
     //rows = cols because square shaped
-    int BLOCKS = ( rows + THREADS -1 )/ THREADS;
+    int BLOCKSx = ( rows + THREADS -1 )/ THREADS;
+    int BLOCKSy = ( cols + THREADS -1 )/ THREADS;
 
-	int sizeDout = BLOCKS*BLOCKS*gl*gl*intsize*4;
+	int sizeDout = BLOCKSx*BLOCKSy*gl*gl*intsize*4;
 
-    cout<<"BLOCKS :";
-    cout<< BLOCKS << endl;
+    cout<<"BLOCKSx :";
+    cout<< BLOCKSx << endl;
+    cout<<"BLOCKSy :";
+    cout<< BLOCKSy << endl;
     dim3 threadsPerBlock(THREADS,THREADS,1);
-    dim3 blocksPerGrid(BLOCKS,BLOCKS,1);
+    dim3 blocksPerGrid(BLOCKSx,BLOCKSy,1);
 
     h_out = (int*)malloc(sizeDout);
+    cout<<"TESTING!@";
     //h_feat = (float*)malloc(floatsize * BLOCKS * BLOCKS * 5);
 
     cudaMalloc(&d_pixels,bytes);
@@ -108,7 +112,8 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     ComputeCoOccurenceMat<<<blocksPerGrid,threadsPerBlock>>>(d_pixels,d_out,N,rows,cols,8,sizeDout);
     gpuErrchk( cudaDeviceSynchronize() );
     
-    cudaMemcpy(h_out, d_out, BLOCKS*BLOCKS*gl*gl*intsize*4, cudaMemcpyDeviceToHost );
+    cudaMemcpy(h_out, d_out, BLOCKSx*BLOCKSy*gl*gl*intsize*4, cudaMemcpyDeviceToHost );
+
     //cudaMemcpy(h_feat, d_feat, BLOCKS*BLOCKS*floatsize*5, cudaMemcpyDeviceToHost );
     
     cudaFree(d_pixels);

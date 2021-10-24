@@ -5,6 +5,7 @@
 #define DEV __device__
 
 
+
 // USES HALF THE NUMBER OF THREADS PER BLOCK ie. 8 x 8 x 4 threads per block.
 __device__ void warpReduce(volatile float* sdata, int tid) {
     sdata[tid] += sdata[tid + 32]; 
@@ -56,8 +57,8 @@ GLOBAL void ContrastFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float conSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    conSubGLCM[id] = subGLCM[i] * __powf( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) + 
-                                subGLCM[i+blockDim.x] * __powf( ((id+blockDim.x)%gl - floorf((id+blockDim.x)/gl) + gl * floorf((id+blockDim.x)/(gl*gl))) ,2);
+    conSubGLCM[id] = subGLCM[i] * __powf( abs(id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) + 
+                                subGLCM[i+blockDim.x] * __powf( abs((id+blockDim.x)%gl - floorf((id+blockDim.x)/gl) + gl * floorf((id+blockDim.x)/(gl*gl))) ,2);
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -81,8 +82,8 @@ GLOBAL void EntropyFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float conSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    conSubGLCM[id] = subGLCM[i] *  logf(subGLCM[i]+1) + 
-                                subGLCM[i+blockDim.x] *  logf(subGLCM[i+blockDim.x]+1);
+    conSubGLCM[id] = subGLCM[i] *  __log10f(subGLCM[i]+1) + 
+                                subGLCM[i+blockDim.x] *  __log10f(subGLCM[i+blockDim.x]+1);
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -106,8 +107,8 @@ GLOBAL void HomogeneityFeature2(int gl, int* subGLCM, float* feature){
     __shared__ float homSubGLCM[8 * 8 * 2];
 
     //First level reduction done while loading data
-    homSubGLCM[id] = subGLCM[i] / ( 1 +  __powf( (id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) ) + 
-                                subGLCM[i+blockDim.x] / ( 1 +  __powf( (id+blockDim.x)%gl - floorf(id+blockDim.x/gl) + gl * floorf(id+blockDim.x/(gl*gl)) ,2) );
+    homSubGLCM[id] = subGLCM[i] / ( 1 +  __powf( abs(id%gl - floorf(id/gl) + gl * floorf(id/(gl*gl))) ,2) ) + 
+                                subGLCM[i+blockDim.x] / ( 1 +  __powf( abs((id+blockDim.x)%gl - floorf(id+blockDim.x/gl) + gl * floorf(id+blockDim.x/(gl*gl))) ,2) );
      __syncthreads();
 
     for (unsigned int s=blockDim.x/2; s>32; s>>=1) {
@@ -234,10 +235,10 @@ GLOBAL void CalculateStddY(int gl,int* SubGLCM, int* meanY,float* stddY){
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
     unsigned int id = threadIdx.x;
     
-    localGLCM1[id] = SubGLCM[i] * __powf( meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __powf( meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __powf( meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
-    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __powf( meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ,2);
+    localGLCM1[id] = SubGLCM[i] * __powf( abs(meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1) ,2);
+    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __powf( abs( meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ),2);
+    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __powf( abs(meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1 ),2);
+    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __powf( abs(meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1) ,2);
     
     if (id < 32) {
         warpReduce(localGLCM1, id); 
@@ -273,9 +274,9 @@ GLOBAL void CorrelationFeature2(int gl, int* subGLCM, float* feature, int* meanX
                         /pow((stddX[value_index] * stddY[value_index]),0.5)
                         +  subGLCM[i+blockDim.x] * ( floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2] ) * (id_step%gl + 1 - meanX[value_index+2])
                         /pow((stddX[value_index+2] * stddY[value_index+2]),0.5); */
-    corSubGLCM[id] = subGLCM[i] * __powf(floorf(id/gl) - gl * floorf(id/gl*gl) + 1 - meanY[value_index] ,2)
+    corSubGLCM[id] = subGLCM[i] * __powf( abs(floorf(id/gl) - gl * floorf(id/gl*gl) + 1 - meanY[value_index]) ,2)
                         /stddX[value_index]
-                        +  subGLCM[i+blockDim.x] * __powf(floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2],2)
+                        +  subGLCM[i+blockDim.x] * __powf(abs(floorf(id_step/gl) - gl * floorf(id_step/gl*gl) + 1 - meanY[value_index+2]),2)
                         /stddX[value_index+2];
                                 
      __syncthreads();
