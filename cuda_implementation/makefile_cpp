@@ -1,0 +1,10 @@
+CC = "g++"
+FLAGS = -pg 
+PROJECT = cuda_implementation
+SRC = main.cpp Image.cpp ImageLoader.cpp
+OUT = build/
+LIBS = `pkg-config opencv --cflags --libs`
+
+$(PROJECT) : $(SRC)
+	$(CC) $(FLAGS) $(SRC) -o $(OUT)$(PROJECT) $(LIBS)
+	

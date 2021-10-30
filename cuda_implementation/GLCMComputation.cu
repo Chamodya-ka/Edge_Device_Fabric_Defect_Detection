@@ -64,7 +64,7 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, const int N,con
             }
 
 
-int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
+int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsigned int subImgDim){
     int* h_out;
     //float* h_feat;
     int* d_pixels;
@@ -82,7 +82,7 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle){
     //size_t floatsize = sizeof(float);
     
 
-    int THREADS = 16;
+    int THREADS = subImgDim;
     //rows = cols because square shaped
     int BLOCKSx = ( rows + THREADS -1 )/ THREADS;
     int BLOCKSy = ( cols + THREADS -1 )/ THREADS;

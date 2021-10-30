@@ -16,7 +16,7 @@ using namespace std::chrono;
 using namespace std;
 
 int main(){
-    cudaFree(0);
+    //cudaFree(0);
     auto start = high_resolution_clock::now();
     string fname = "../testimg/gradient.png";
     unsigned int  maxgl = 255;
@@ -28,10 +28,6 @@ int main(){
     uint c = img.get_cols(); 
     cout<<"From main r : "<< r << "\n";
     cout<<"From main c : "<< c << "\n";
-    //auto stop = high_resolution_clock::now();
-    //auto duration = duration_cast<milliseconds>(stop - start);
- 
-    //cout << duration.count() << endl;
     /*vector<int> pixels = img.getPixels();
     //vector<vector<uint8_t>> vector2d = img.get2dVector();
 
@@ -86,7 +82,7 @@ int main(){
     std::cout << "8 : " + to_string(eight) << endl; 
     std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl; 
     */
- 
+  /*
     GLCMComputation glcm = GLCMComputation();
     int* out = glcm.GetSubGLCM(img,1,1,subImgDim);
 
@@ -111,7 +107,7 @@ int main(){
     auto duration = duration_cast<milliseconds>(stop - start);
  
     cout << duration.count() << endl;
-
+*/
 //end testing
 
 /*

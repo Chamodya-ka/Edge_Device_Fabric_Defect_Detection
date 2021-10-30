@@ -9,7 +9,7 @@ class GLCMComputation {
 
 public:
     GLCMComputation(){} 
-    int* GetSubGLCM(Image img, const int d, const int angle);
+    int* GetSubGLCM(Image img, const int d, const int angle,unsigned int subImgDim);
     
 
 

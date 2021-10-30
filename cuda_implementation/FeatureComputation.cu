@@ -14,15 +14,18 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 
 
-float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols){
+float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
     float* h_feat;
     //float* d_feat;
     //int* d_subGLCM;
     size_t intsize = sizeof(int);
     size_t floatsize = sizeof(float);
-	int blocksX = rows/16;
-	int blocksY = cols/16;
+	int blocksX = rows/subImgDim;
+	int blocksY = cols/subImgDim;
 	int N = blocksX * blocksY;
+	std::cout << "N " << N;
+	std::cout << " blocksX " << blocksX;
+	std::cout << " blocksY " << blocksY << "\n";
     //int N = 64 * 64; // Number of blocks per image
     //int bytes = 4 * gl * gl * N * intsize;
 	int num_intermediates = 4 * N;
@@ -94,14 +97,29 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols){
 	cudaMallocHost(&h_sGLCM_3,byte);
 	cudaMallocHost(&h_sGLCM_4,byte);
 	//cudaMallocHost(&)
-		
-	for (int i = 0 ; i < N * gl *gl * 4 ; i++){
+	int host_data1[N*gl*gl*4];
+	int host_data2[N*gl*gl*4];	
+	int host_data3[N*gl*gl*4];	
+	int host_data4[N*gl*gl*4];	
+	int host_data5[N*gl*gl*4];		
+	memcpy(host_data1,subGLCM,byte);
+	memcpy(host_data2,subGLCM,byte);
+	memcpy(host_data2,subGLCM,byte);
+	memcpy(host_data4,subGLCM,byte);
+	memcpy(host_data5,subGLCM,byte);
+	h_sGLCM = host_data1;
+	h_sGLCM_1 = host_data2;
+	h_sGLCM_2 = host_data3;
+	h_sGLCM_3 = host_data4;
+	h_sGLCM_4 = host_data5;  
+
+	/*  for (int i = 0 ; i < N * gl *gl * 4 ; i++){
 		h_sGLCM[i] = subGLCM[i];
 		h_sGLCM_1[i] = subGLCM[i];
 		h_sGLCM_2[i] = subGLCM[i];
 		h_sGLCM_3[i] = subGLCM[i];
 		h_sGLCM_4[i] = subGLCM[i];				
-	}	
+	}  */	
 
 		
 	int N_STREAMS = 5; // 5 features
@@ -172,14 +190,16 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols){
 	///free(h_sGLCM_2);
 	//free(h_sGLCM_3);
 	//free(h_sGLCM_4);
-		
+
+	
+	std::cout << h_feat_1[1493]<<"\n";	
 	for (int i = 0 ; i < N ;i++){
 		std::cout<<h_feat_1[i]<<" ";
 		std::cout<<h_feat_2[i]<<" ";
 		std::cout<<h_feat_3[i]<<" ";
 		std::cout<<h_feat_4[i]<<" ";
-		std::cout<<h_feat_5[i]<<" \n";
-	}
+		std::cout<<h_feat_5[i]<<" \n";  
+	}   
 	
 	// ADDED END HERE
 /*
