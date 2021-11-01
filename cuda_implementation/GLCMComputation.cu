@@ -11,10 +11,57 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, const int N,const int rows, const int cols
+ __device__ void warpReduceGLCM(volatile int* sdata, int tid) {
+    sdata[tid] += sdata[tid + 32]; 
+    sdata[tid] += sdata[tid + 16]; 
+    sdata[tid] += sdata[tid +  8];
+    sdata[tid] += sdata[tid +  4]; 
+    sdata[tid] += sdata[tid +  2]; 
+    sdata[tid] += sdata[tid +  1]; 
+} 
+__device__ void normalizeGLCM(volatile float* subGLCM,int id,int gl){
+    __shared__ int tempGLCM[8*8*4];
+    tempGLCM[id] = subGLCM[id];
+    __syncthreads();
+    for (unsigned int s=gl*gl/2; s>32; s>>=1) {
+        if (id < s) {
+            tempGLCM[id] += tempGLCM[id + s];
+            tempGLCM[id+gl*gl*1] += tempGLCM[id+gl*gl*1 + s];
+            tempGLCM[id+gl*gl*2] += tempGLCM[id+gl*gl*2 + s];
+            tempGLCM[id+gl*gl*3] += tempGLCM[id+gl*gl*3 + s];
+        }
+        __syncthreads();
+    }
+    if (id < 32){
+        warpReduceGLCM(tempGLCM, id);
+        
+        warpReduceGLCM(tempGLCM, id + gl * gl * 1);
+
+        warpReduceGLCM(tempGLCM, id + gl * gl * 2);
+
+        warpReduceGLCM(tempGLCM, id + gl * gl * 3);
+
+    } 
+    __syncthreads();
+    if (floorf(__fdividef(id,gl*gl)) == 0){
+        subGLCM[id] = __fdividef(subGLCM[id],tempGLCM[0]);
+    }
+    if (floorf(__fdividef(id,gl*gl)) == 1){
+        subGLCM[id] = __fdividef(subGLCM[id],tempGLCM[gl*gl*1]);
+    }   
+    if (floorf(__fdividef(id,gl*gl)) == 2){
+        subGLCM[id] = __fdividef(subGLCM[id],tempGLCM[gl*gl*2]);
+    }   
+    if (floorf(__fdividef(id,gl*gl)) == 3){
+        subGLCM[id] = __fdividef(subGLCM[id],tempGLCM[gl*gl*3]);
+    }    
+
+}
+
+GLOBAL void ComputeCoOccurenceMat(const int *pixels, float *d_out, const int N,const int rows, const int cols
             , int gl,int sizeDout){
                 //float* feature; 
-                __shared__ int subGLCM[8 * 8 * 4];
+                __shared__ float subGLCM[8 * 8 * 4];
                 //__shared__ float featureVector[5];
                 int blockID = blockIdx.x + blockIdx.y *gridDim.x;
                 int idX = blockID * (blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x) + threadIdx.x;
@@ -53,8 +100,11 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, const int N,con
                 }
                 
                  __syncthreads();
-                 
-                
+
+                if(localIdX < gl*gl){
+                    normalizeGLCM(subGLCM,localIdX,gl);
+                } 
+                __syncthreads();
                 if (localIdX< gl * gl * 4){
                     if (blockID * gl * gl * 4 + localIdX < sizeDout)
                     	d_out[blockID * gl * gl * 4 + localIdX] = subGLCM[localIdX];
@@ -64,11 +114,11 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, int *d_out, const int N,con
             }
 
 
-int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsigned int subImgDim){
-    int* h_out;
+float* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsigned int subImgDim){
+    float* h_out;
     //float* h_feat;
     int* d_pixels;
-    int* d_out;
+    float* d_out;
     //float* d_feat;
     std::vector<int> v = img.getPixels();
     int* host_pixels = &v[0];
@@ -79,6 +129,7 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsign
 
     size_t bytes = rows * cols * sizeof(int);
     size_t intsize = sizeof(int);
+    size_t floatsize = sizeof(float);
     //size_t floatsize = sizeof(float);
     
 
@@ -87,7 +138,7 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsign
     int BLOCKSx = ( rows + THREADS -1 )/ THREADS;
     int BLOCKSy = ( cols + THREADS -1 )/ THREADS;
 
-	int sizeDout = BLOCKSx*BLOCKSy*gl*gl*intsize*4;
+	int sizeDout = BLOCKSx*BLOCKSy*gl*gl*floatsize*4;
 
     cout<<"BLOCKSx :";
     cout<< BLOCKSx << endl;
@@ -96,7 +147,7 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsign
     dim3 threadsPerBlock(THREADS,THREADS,1);
     dim3 blocksPerGrid(BLOCKSx,BLOCKSy,1);
 
-    h_out = (int*)malloc(sizeDout);
+    h_out = (float*)malloc(sizeDout);
     cout<<"TESTING!@";
     //h_feat = (float*)malloc(floatsize * BLOCKS * BLOCKS * 5);
 
@@ -112,7 +163,7 @@ int* GLCMComputation :: GetSubGLCM(Image img,const int d, const int angle,unsign
     ComputeCoOccurenceMat<<<blocksPerGrid,threadsPerBlock>>>(d_pixels,d_out,N,rows,cols,8,sizeDout);
     gpuErrchk( cudaDeviceSynchronize() );
     
-    cudaMemcpy(h_out, d_out, BLOCKSx*BLOCKSy*gl*gl*intsize*4, cudaMemcpyDeviceToHost );
+    cudaMemcpy(h_out, d_out, BLOCKSx*BLOCKSy*gl*gl*floatsize*4, cudaMemcpyDeviceToHost );
 
     //cudaMemcpy(h_feat, d_feat, BLOCKS*BLOCKS*floatsize*5, cudaMemcpyDeviceToHost );
     

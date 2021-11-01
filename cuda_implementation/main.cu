@@ -23,34 +23,34 @@ int main(){
     unsigned int  mingl = 0;
     unsigned int  desiredgl = 7;
     unsigned int subImgDim = 32;
-    Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,1280,1280);
+    Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,2048,2048);
     uint r = img.get_rows();
     uint c = img.get_cols(); 
-    cout<<"From main r : "<< r << "\n";
-    cout<<"From main c : "<< c << "\n";
+    //cout<<"From main r : "<< r << "\n";
+    //cout<<"From main c : "<< c << "\n";
     //auto stop = high_resolution_clock::now();
     //auto duration = duration_cast<milliseconds>(stop - start);
  
     //cout << duration.count() << endl;
-    /*vector<int> pixels = img.getPixels();
+    //vector<int> pixels = img.getPixels();
     //vector<vector<uint8_t>> vector2d = img.get2dVector();
 
-    cout << "matrix size "+to_string(img.get_rows() * img.get_cols())+" vector size = "+to_string(pixels.size()) << endl;
+    //cout << "matrix size "+to_string(img.get_rows() * img.get_cols())+" vector size = "+to_string(pixels.size()) << endl;
  
-    Mat dst = Mat(r,c, CV_8UC1 ,&pixels,c * sizeof(uint8_t));
+    //Mat dst = Mat(r,c, CV_8UC1 ,&pixels,c * sizeof(uint8_t));
     
-    cout << "NEW MAT "+to_string(dst.rows * dst.cols) << endl;
-    cout << dst.total() << endl;
-    cout << dst.rows << endl;
-    cout << dst.cols << endl;
-    cout << dst.type() << endl;
-    cout << dst.depth() << endl;
-    cout << dst.channels() << endl;
+    //cout << "NEW MAT "+to_string(dst.rows * dst.cols) << endl;
+    //cout << dst.total() << endl;
+    //cout << dst.rows << endl;
+    //cout << dst.cols << endl;
+    //cout << dst.type() << endl;
+    //cout << dst.depth() << endl;
+    //cout << dst.channels() << endl;
 
 
     //used for testing
     
-    uint zero= 0;uint one= 0;uint two= 0;uint three= 0;uint four= 0;uint five= 0;uint six= 0;uint seven= 0;uint eight = 0;
+    /* uint zero= 0;uint one= 0;uint two= 0;uint three= 0;uint four= 0;uint five= 0;uint six= 0;uint seven= 0;uint eight = 0;
      
     for(int i = 0; i < pixels.size(); i++) {
         
@@ -85,32 +85,32 @@ int main(){
     std::cout << "7 : " + to_string(seven) << endl;  
     std::cout << "8 : " + to_string(eight) << endl; 
     std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl; 
-    */
+     */
  
     GLCMComputation glcm = GLCMComputation();
-    int* out = glcm.GetSubGLCM(img,1,1,subImgDim);
+    float* out = glcm.GetSubGLCM(img,1,1,subImgDim);
 
   
   
-    for (int i = 0 ; i < 64 * 4 * 3 ; i ++){
+    /* for (int i = 0 ; i < 64 * 4 * 3 ; i ++){
         if (i%8==0)
             cout << "\n";
         if (i%256==0)
             cout << "\n";
         
         cout<<  *(out + i + 1493 * 64 * 4);
-    }                            
+    }     */                        
 
 
 
  
-    cout <<"GLCMs computed"<< "\n";
+    //cout <<"GLCMs computed"<< "\n";
 
     float* h = FeatureComputation::getFeatures(out,8,r,c,subImgDim);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
  
-    cout << duration.count() << endl;
+    cout << duration.count() <<" ms"<< endl;
 
 //end testing
 

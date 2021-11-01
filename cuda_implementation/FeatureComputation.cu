@@ -14,7 +14,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 
 
-float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
+float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
     float* h_feat;
     //float* d_feat;
     //int* d_subGLCM;
@@ -43,26 +43,26 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,un
 	float* d_feat_3;
 	float* d_feat_4;
 	float* d_feat_5;
-	int* d_inp_1; 
-	int* d_inp_2; 
-	int* d_inp_3; 
-	int* d_inp_4; 
-	int* d_inp_5; 
+	float* d_inp_1; 
+	float* d_inp_2; 
+	float* d_inp_3; 
+	float* d_inp_4; 
+	float* d_inp_5; 
 	//float* stddX_h;
 	//float* stddY_h;
 	float* stddX_d;
 	float* stddY_d;
 	//int* meanX_h;
 	//int* meanY_h;
-	int* meanX_d;
-	int* meanY_d;
+	float* meanX_d;
+	float* meanY_d;
   
 	h_feat_1 = (float*) malloc(floatsize * N);
 	h_feat_2 = (float*) malloc(floatsize * N);
 	h_feat_3 = (float*) malloc(floatsize * N);
 	h_feat_4 = (float*) malloc(floatsize * N);
 	h_feat_5 = (float*) malloc(floatsize * N);
-	
+	std::cout << " Here1 "<<"\n";	
 	//stddX_h = (float*) malloc(floatsize * num_intermediates);
 	//stddY_h = (float*) malloc(floatsize * num_intermediates);
 	//meanX_h = (int*) malloc(intsize * num_intermediates);
@@ -73,35 +73,37 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,un
 	cudaMalloc(&d_feat_3,floatsize * N);
 	cudaMalloc(&d_feat_4,floatsize * N);
 	cudaMalloc(&d_feat_5,floatsize * N);
-
-	cudaMalloc(&d_inp_1, intsize * 4 * gl * gl * N);
-	cudaMalloc(&d_inp_2, intsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_3, intsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_4, intsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_5, intsize * 4  * gl * gl * N);
+	std::cout << " Here2 "<<"\n";	
+	cudaMalloc(&d_inp_1, floatsize * 4 * gl * gl * N);
+	cudaMalloc(&d_inp_2, floatsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_3, floatsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_4, floatsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_5, floatsize * 4  * gl * gl * N);
 
 	cudaMalloc(&stddX_d, floatsize * num_intermediates);	
 	cudaMalloc(&stddY_d, floatsize * num_intermediates);	
-	cudaMalloc(&meanX_d, intsize * num_intermediates);		
-	cudaMalloc(&meanY_d, intsize * num_intermediates);		 						
-	
-	int byte = 4 * gl * gl * N * intsize;
-	int *h_sGLCM;//,*h_sGLCM2,*h_sGLCM3,*h_sGLCM4;
-	int *h_sGLCM_1;
-	int *h_sGLCM_2;
-	int *h_sGLCM_3;
- 	int *h_sGLCM_4;
+	cudaMalloc(&meanX_d, floatsize * num_intermediates);		
+	cudaMalloc(&meanY_d, floatsize * num_intermediates);		 						
+	std::cout << " Here3 "<<"\n";
+	int byte = 4 * gl * gl * N * floatsize;
+	float *h_sGLCM;//,*h_sGLCM2,*h_sGLCM3,*h_sGLCM4;
+	float *h_sGLCM_1;
+	float *h_sGLCM_2;
+	float *h_sGLCM_3;
+ 	float *h_sGLCM_4;
 	cudaMallocHost(&h_sGLCM,byte);
 	cudaMallocHost(&h_sGLCM_1,byte);
 	cudaMallocHost(&h_sGLCM_2,byte);
 	cudaMallocHost(&h_sGLCM_3,byte);
 	cudaMallocHost(&h_sGLCM_4,byte);
 	//cudaMallocHost(&)
-	int host_data1[N*gl*gl*4];
-	int host_data2[N*gl*gl*4];	
-	int host_data3[N*gl*gl*4];	
-	int host_data4[N*gl*gl*4];	
-	int host_data5[N*gl*gl*4];		
+	std::cout << " Here4 "<<"\n";
+	float* host_data1= (float*) malloc(byte);
+	float* host_data2= (float*) malloc(byte);
+	float* host_data3= (float*) malloc(byte);	
+	float* host_data4= (float*) malloc(byte);	
+	float* host_data5= (float*) malloc(byte);	
+	std::cout << " Here5 "<<"\n";
 	memcpy(host_data1,subGLCM,byte);
 	memcpy(host_data2,subGLCM,byte);
 	memcpy(host_data2,subGLCM,byte);
@@ -112,7 +114,7 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,un
 	h_sGLCM_2 = host_data3;
 	h_sGLCM_3 = host_data4;
 	h_sGLCM_4 = host_data5;  
-
+	
 	/*  for (int i = 0 ; i < N * gl *gl * 4 ; i++){
 		h_sGLCM[i] = subGLCM[i];
 		h_sGLCM_1[i] = subGLCM[i];

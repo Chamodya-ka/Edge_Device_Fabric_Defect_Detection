@@ -1,10 +1,17 @@
 #include "ImageLoader.h"
+#define GLOBAL __global__ 
 
 /* 
     Currently using opencv without cuda
  */
 
+GLOBAL void quantizeArray(uchar* arr,int* out,unsigned int max_gl,unsigned  int min_gl,unsigned int desired_gl,int N){
+    unsigned int idx = blockDim.x*blockIdx.x + threadIdx.x;
+    if (idx<N){
+        out[idx] = rintf(__fdividef( (arr[idx] - min_gl) * (desired_gl) , (max_gl-min_gl)));
+    }
 
+}
 Mat ImageLoader::readImageFromFile(string filename,unsigned int d_sizex, unsigned int d_sizey){
 
     Mat image;
@@ -55,7 +62,8 @@ Image ImageLoader::readImage(string filename, unsigned int inmaxlevel, unsigned 
     
 
     //im = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
-    vector<int> pixels = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
+    vector<int> pixels = quantize2(im, maxgraylevel, inmaxlevel, inminlevel);
+    //vector<int> pixels = quantize(im, maxgraylevel, inmaxlevel, inminlevel);
 
     cout<<"MATRIX TOTAL = "+to_string(im.total()) +"| pixels length = "+ to_string(pixels.size())<<endl;
     
@@ -112,4 +120,33 @@ Mat ImageLoader:: getQuantizedMat(Mat& img, unsigned int maxgraylevel, unsigned 
     return pixels; 
 
 }
+ vector<int> ImageLoader::quantize2(Mat& img, unsigned int maxgraylevel, unsigned int inmaxlevel ,unsigned int inminlevel)
+{
+    //int* inPixels;    
+    //inPixels = img.ptr<int>(0);
+    int N = img.rows * img.cols * img.channels();
+    
+    uchar* inPixels = img.data;
+    int inBytes = N* sizeof(uchar);
+    int outBytes = N * sizeof(int);
 
+    uchar* dInPixels;
+    int* dOutPixels;
+    int* hOutPixels = (int*) malloc(outBytes);
+    cudaMalloc(&dInPixels,inBytes);
+    cudaMalloc(&dOutPixels,outBytes);
+    cudaMemcpy(dInPixels,inPixels,inBytes,cudaMemcpyHostToDevice);
+    
+    int threads = 256;
+    dim3 THREADS(threads);
+    dim3 BLOCKS(( N - 1 + threads )/ threads);
+    std::cout<<"here"<<endl;
+    quantizeArray<<<BLOCKS,THREADS>>>(dInPixels,dOutPixels,inmaxlevel,inminlevel,maxgraylevel,N);
+    cudaDeviceSynchronize();
+    
+    cudaMemcpy(hOutPixels,dOutPixels,outBytes,cudaMemcpyDeviceToHost);
+    /* CONTINUE ARRAY TO VECTOR AND RETURN */
+    std::vector<int> pixels(hOutPixels,hOutPixels+N); 
+    return pixels;
+
+}
