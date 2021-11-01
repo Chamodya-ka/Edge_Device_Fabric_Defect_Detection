@@ -25,7 +25,7 @@ __device__ void warpReduce(volatile int* sdata, int tid) {
 }
 
 
-GLOBAL void EnergyFeature2(int gl, float* subGLCM, float* feature){
+GLOBAL void EnergyFeature2(int gl, int* subGLCM, float* feature){
     //unsigned int blockID = blockIdx.x;
     unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
     unsigned int id = threadIdx.x;
@@ -49,7 +49,7 @@ GLOBAL void EnergyFeature2(int gl, float* subGLCM, float* feature){
 
 }
 
-GLOBAL void ContrastFeature2(int gl, float* subGLCM, float* feature){
+GLOBAL void ContrastFeature2(int gl, int* subGLCM, float* feature){
     //unsigned int blockID = blockIdx.x;
     unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
     unsigned int id = threadIdx.x;
@@ -74,7 +74,7 @@ GLOBAL void ContrastFeature2(int gl, float* subGLCM, float* feature){
 
 }
 
-GLOBAL void EntropyFeature2(int gl, float* subGLCM, float* feature){
+GLOBAL void EntropyFeature2(int gl, int* subGLCM, float* feature){
     //unsigned int blockID = blockIdx.x;
     unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
     unsigned int id = threadIdx.x;
@@ -99,7 +99,7 @@ GLOBAL void EntropyFeature2(int gl, float* subGLCM, float* feature){
 
 }
 
-GLOBAL void HomogeneityFeature2(int gl, float* subGLCM, float* feature){
+GLOBAL void HomogeneityFeature2(int gl, int* subGLCM, float* feature){
     //unsigned int blockID = blockIdx.x;
     unsigned int i = blockIdx.x*(blockDim.x*2) + threadIdx.x;
     unsigned int id = threadIdx.x;
@@ -125,7 +125,7 @@ GLOBAL void HomogeneityFeature2(int gl, float* subGLCM, float* feature){
 }
 
 
-GLOBAL void CalculateMeanX(int gl,float* SubGLCM,float* meanX){
+GLOBAL void CalculateMeanX(int gl,int* SubGLCM,int* meanX){
     //SubGLCM in shared memory,
     //Using 64 threads.
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
@@ -160,7 +160,7 @@ GLOBAL void CalculateMeanX(int gl,float* SubGLCM,float* meanX){
         }
 
 }
-GLOBAL void CalculateMeanY(int gl,float* SubGLCM,float* meanY){
+GLOBAL void CalculateMeanY(int gl,int* SubGLCM,int* meanY){
     //SubGLCM in shared memory,
     //Using 64 threads.
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
@@ -195,7 +195,7 @@ GLOBAL void CalculateMeanY(int gl,float* SubGLCM,float* meanY){
 
 }
 
-GLOBAL void CalculateStddX(int gl,float* SubGLCM, float* meanX,float* stddX){
+GLOBAL void CalculateStddX(int gl,int* SubGLCM, int* meanX,float* stddX){
     //64 thread  laucnhed
     __shared__ float localGLCM1[8 * 8];
     __shared__ float localGLCM2[8 * 8];
@@ -225,7 +225,7 @@ GLOBAL void CalculateStddX(int gl,float* SubGLCM, float* meanX,float* stddX){
         }
 }
 
-GLOBAL void CalculateStddY(int gl,float* SubGLCM, float* meanY,float* stddY){
+GLOBAL void CalculateStddY(int gl,int* SubGLCM, int* meanY,float* stddY){
     //64 thread  laucnhed
     __shared__ float localGLCM1[8 * 8];
     __shared__ float localGLCM2[8 * 8];
@@ -255,7 +255,7 @@ GLOBAL void CalculateStddY(int gl,float* SubGLCM, float* meanY,float* stddY){
         }
 }
 
-GLOBAL void CorrelationFeature2(int gl, float* subGLCM, float* feature, float* meanX, float* meanY,float* stddX, float* stddY){
+GLOBAL void CorrelationFeature2(int gl, int* subGLCM, float* feature, int* meanX, int* meanY,float* stddX, float* stddY){
     
     //128 threads launched
     unsigned int blockdim = blockDim.x;

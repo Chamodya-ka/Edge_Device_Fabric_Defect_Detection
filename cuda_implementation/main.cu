@@ -88,7 +88,7 @@ int main(){
      */
  
     GLCMComputation glcm = GLCMComputation();
-    float* out = glcm.GetSubGLCM(img,1,1,subImgDim);
+    int* out = glcm.GetSubGLCM(img,1,1,subImgDim);
 
   
   

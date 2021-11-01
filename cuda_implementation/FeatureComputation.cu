@@ -14,7 +14,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 
 
-float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
+float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
     float* h_feat;
     //float* d_feat;
     //int* d_subGLCM;
@@ -43,19 +43,19 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	float* d_feat_3;
 	float* d_feat_4;
 	float* d_feat_5;
-	float* d_inp_1; 
-	float* d_inp_2; 
-	float* d_inp_3; 
-	float* d_inp_4; 
-	float* d_inp_5; 
+	int* d_inp_1; 
+	int* d_inp_2; 
+	int* d_inp_3; 
+	int* d_inp_4; 
+	int* d_inp_5; 
 	//float* stddX_h;
 	//float* stddY_h;
 	float* stddX_d;
 	float* stddY_d;
 	//int* meanX_h;
 	//int* meanY_h;
-	float* meanX_d;
-	float* meanY_d;
+	int* meanX_d;
+	int* meanY_d;
   
 	h_feat_1 = (float*) malloc(floatsize * N);
 	h_feat_2 = (float*) malloc(floatsize * N);
@@ -74,18 +74,18 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	cudaMalloc(&d_feat_4,floatsize * N);
 	cudaMalloc(&d_feat_5,floatsize * N);
 	std::cout << " Here2 "<<"\n";	
-	cudaMalloc(&d_inp_1, floatsize * 4 * gl * gl * N);
-	cudaMalloc(&d_inp_2, floatsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_3, floatsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_4, floatsize * 4  * gl * gl * N);
-	cudaMalloc(&d_inp_5, floatsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_1, intsize * 4 * gl * gl * N);
+	cudaMalloc(&d_inp_2, intsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_3, intsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_4, intsize * 4  * gl * gl * N);
+	cudaMalloc(&d_inp_5, intsize * 4  * gl * gl * N);
 
 	cudaMalloc(&stddX_d, floatsize * num_intermediates);	
 	cudaMalloc(&stddY_d, floatsize * num_intermediates);	
-	cudaMalloc(&meanX_d, floatsize * num_intermediates);		
-	cudaMalloc(&meanY_d, floatsize * num_intermediates);		 						
+	cudaMalloc(&meanX_d, intsize * num_intermediates);		
+	cudaMalloc(&meanY_d, intsize * num_intermediates);		 						
 	std::cout << " Here3 "<<"\n";
-	int byte = 4 * gl * gl * N * floatsize;
+	int byte = 4 * gl * gl * N * intsize;
 	float *h_sGLCM;//,*h_sGLCM2,*h_sGLCM3,*h_sGLCM4;
 	float *h_sGLCM_1;
 	float *h_sGLCM_2;
