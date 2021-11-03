@@ -9,7 +9,7 @@ using namespace std;
 class Image {
 
 public:
-    Image(vector<int> pixels, unsigned int rows, unsigned int cols,unsigned int mingraylevel,
+    Image(const vector<int> &pixels, unsigned int rows, unsigned int cols,unsigned int mingraylevel,
     unsigned int maxgraylevel);
     vector<int> getPixels();
     unsigned int get_rows();

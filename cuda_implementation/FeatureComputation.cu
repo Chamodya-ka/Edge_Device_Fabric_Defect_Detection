@@ -194,14 +194,14 @@ float* FeatureComputation::getFeatures(int* subGLCM,int gl,int rows, int cols,un
 	//free(h_sGLCM_4);
 
 	
-	std::cout << h_feat_1[1493]<<"\n";	
+	/* std::cout << h_feat_1[1493]<<"\n";	
 	for (int i = 0 ; i < N ;i++){
 		std::cout<<h_feat_1[i]<<" ";
 		std::cout<<h_feat_2[i]<<" ";
 		std::cout<<h_feat_3[i]<<" ";
 		std::cout<<h_feat_4[i]<<" ";
 		std::cout<<h_feat_5[i]<<" \n";  
-	}   
+	}  */  
 	
 	// ADDED END HERE
 /*

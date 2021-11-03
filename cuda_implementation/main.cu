@@ -18,12 +18,16 @@ using namespace std;
 int main(){
     cudaFree(0);
     auto start = high_resolution_clock::now();
-    string fname = "../testimg/gradient.png";
+    string fname = "../testimg/resized/gradient.png";
     unsigned int  maxgl = 255;
     unsigned int  mingl = 0;
     unsigned int  desiredgl = 7;
     unsigned int subImgDim = 32;
     Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,2048,2048);
+        auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+ 
+    cout << duration.count() <<" ms"<< endl;    
     uint r = img.get_rows();
     uint c = img.get_cols(); 
     //cout<<"From main r : "<< r << "\n";
@@ -107,10 +111,7 @@ int main(){
     //cout <<"GLCMs computed"<< "\n";
 
     float* h = FeatureComputation::getFeatures(out,8,r,c,subImgDim);
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
- 
-    cout << duration.count() <<" ms"<< endl;
+
 
 //end testing
 
