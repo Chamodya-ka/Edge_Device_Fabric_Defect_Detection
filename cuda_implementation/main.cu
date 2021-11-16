@@ -7,7 +7,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-
+//nvvp -vm /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 //#include <opencv2/opencv.hpp>
 //using namespace cv;
 /* 
@@ -92,25 +92,25 @@ int main(){
      */
  
     GLCMComputation glcm = GLCMComputation();
-    int* out = glcm.GetSubGLCM(img,1,1,subImgDim);
+    float* d_out = glcm.GetSubGLCM(img,1,1,subImgDim); // device pointer.
 
   
   
-    /* for (int i = 0 ; i < 64 * 4 * 3 ; i ++){
+     for (int i = 0 ; i < 64 * 4  ; i ++){
         if (i%8==0)
             cout << "\n";
         if (i%256==0)
             cout << "\n";
         
-        cout<<  *(out + i + 1493 * 64 * 4);
-    }     */                        
+        cout<<  *(d_out + i);
+    }                             
 
 
 
  
     //cout <<"GLCMs computed"<< "\n";
 
-    float* h = FeatureComputation::getFeatures(out,8,r,c,subImgDim);
+    float* h = FeatureComputation::getFeatures(d_out,8,r,c,subImgDim);
 
 
 //end testing
