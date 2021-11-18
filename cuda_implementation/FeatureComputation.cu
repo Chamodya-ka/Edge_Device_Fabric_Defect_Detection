@@ -201,19 +201,19 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	//cudaMemcpyAsync(h_feat_meanY, meanY_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 	//cudaMemcpyAsync(h_feat_stddX, stddX_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 	//cudaMemcpyAsync(h_feat_stddY, stddY_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
-	/*  std::cout << h_feat_1[1493]<<"\n";	
+	  std::cout << h_feat_1[1493]<<"\n";	
 	for (int i = 0 ; i < N ;i++){
 		std::cout<<h_feat_1[i]<<" ";
 		std::cout<<h_feat_2[i]<<" ";
 		std::cout<<h_feat_3[i]<<" ";
 		std::cout<<h_feat_4[i]<<" ";
-		//std::cout<<h_feat_meanX[i]<<" ";
-		//std::cout<<h_feat_meanY[i]<<" ";
-		//std::cout<<h_feat_stddX[i]<<" ";
-		//std::cout<<h_feat_stddY[i]<<" ";
+		std::cout<<h_feat_meanX[i]<<" ";
+		std::cout<<h_feat_meanY[i]<<" ";
+		std::cout<<h_feat_stddX[i]<<" ";
+		std::cout<<h_feat_stddY[i]<<" ";
 		std::cout<<h_feat_5[i]<<" \n";  
 
-	}   */  
+	}    
 	cudaFree(stddX_d);
 	cudaFree(stddY_d);
 	cudaFree(meanY_d);
