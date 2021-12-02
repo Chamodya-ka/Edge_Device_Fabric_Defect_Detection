@@ -11,26 +11,30 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
- __device__ void warpReduceGLCM(volatile float* sdata, unsigned int tid) {
-    sdata[tid] += sdata[tid + 32]; 
-    sdata[tid] += sdata[tid + 16]; 
+ __device__ void warpReduceGLCM(volatile int* sdata, unsigned int tid) {
+     //Not used
+    sdata[tid] += sdata[tid + 32];
+    sdata[tid] += sdata[tid + 16];
     sdata[tid] += sdata[tid +  8];
-    sdata[tid] += sdata[tid +  4]; 
+    sdata[tid] += sdata[tid +  4];
     sdata[tid] += sdata[tid +  2]; 
     sdata[tid] += sdata[tid +  1];  
 } 
-__device__ void normalizeGLCM(volatile int* histogramSubGLCM,volatile float* subGLCM,unsigned  int id,int gl){
-    __shared__ float tempGLCM[8*8*4];
-    /*   for (unsigned int i =0 ;i < 4; i++){
+__device__ void normalizeGLCM(volatile int* histogramSubGLCM,volatile float* subGLCM,unsigned  int id,unsigned int gl){
+    //Not used
+    __shared__ int tempGLCM[8*8*4];
+    id = threadIdx.x + threadIdx.y * blockDim.x;
+    for (unsigned int i =0 ;i < 4; i++){
         tempGLCM[id+gl*gl*i] = histogramSubGLCM[id+gl*gl*i];
-    }  */ 
-    
-    subGLCM[id] = histogramSubGLCM[id];
-    
+        subGLCM[id+gl*gl*i] = histogramSubGLCM[id+gl*gl*i];
 
-     tempGLCM[id] = histogramSubGLCM[id];
+    }   
+
+    //subGLCM[id] = histogramSubGLCM[id];
+    //tempGLCM[id] = histogramSubGLCM[id];
+
     __syncthreads();
-    /* for (unsigned int s=gl*gl/2; s>32; s>>=1) {
+    for (unsigned int s=gl*gl/2; s>=1; s>>=1) {
         if (id < s) {
             tempGLCM[id]         += tempGLCM[id + s];
             tempGLCM[id+gl*gl*1] += tempGLCM[id+gl*gl*1 + s];
@@ -38,43 +42,43 @@ __device__ void normalizeGLCM(volatile int* histogramSubGLCM,volatile float* sub
             tempGLCM[id+gl*gl*3] += tempGLCM[id+gl*gl*3 + s];
         }
         __syncthreads();
-    } */
-    if (id < 32){
-        warpReduceGLCM(tempGLCM, id);
-    }
-    
-    else if (64<=id <96){
-        warpReduceGLCM(tempGLCM, id);
-    }else if(128<=id<160){
-        warpReduceGLCM(tempGLCM, id);
-    }else if(192<=id<224){
-        warpReduceGLCM(tempGLCM, id);
     } 
+    /* if (id < 32){
+        warpReduceGLCM(tempGLCM, id);
+        warpReduceGLCM(tempGLCM, id+gl*gl*1);
+        warpReduceGLCM(tempGLCM, id+gl*gl*2);
+        warpReduceGLCM(tempGLCM, id+gl*gl*3);
+    } */
+
     __syncthreads();
-    subGLCM[id] = __fdividef(histogramSubGLCM[id],tempGLCM[gl*gl*(id/(gl*gl))]);
-    
-    /* subGLCM[id + gl * gl * 0] = __fdividef(subGLCM[id + gl * gl * 0],tempGLCM[gl*gl*0]);
-
-    subGLCM[id + gl * gl * 1] = 6.0;//tempGLCM[gl*gl*1];//__fdividef(subGLCM[id + gl * gl * 1],tempGLCM[gl*gl*1]);
-
-    subGLCM[id + gl * gl * 2] = tempGLCM[gl*gl*2];//__fdividef(subGLCM[id + gl * gl * 2],tempGLCM[gl*gl*2]);
-
-    subGLCM[id + gl * gl * 3] = tempGLCM[gl*gl*3];//__fdividef(subGLCM[id + gl * gl * 3],tempGLCM[gl*gl*3]);
- */
+    for (unsigned int i =0 ;i < 4; i++){
+        subGLCM[id+gl*gl*i] = __fdividef(subGLCM[id + gl*gl*i],tempGLCM[gl*gl*i]);
+    }  
+   /*  subGLCM[id+gl*gl*0] = __fdividef(subGLCM[id],tempGLCM[gl*gl*0]);
+    subGLCM[id+gl*gl*1] = __fdividef(subGLCM[id+gl*gl*1],tempGLCM[gl*gl*1]);
+    subGLCM[id+gl*gl*2] = __fdividef(subGLCM[id+gl*gl*2],tempGLCM[gl*gl*2]);
+    subGLCM[id+gl*gl*3] = __fdividef(subGLCM[id+gl*gl*3],tempGLCM[gl*gl*3]); */
 
 }
 
 GLOBAL void ComputeCoOccurenceMat(const int *pixels, float *d_out, const int N,const int rows, const int cols
-            , int gl,int sizeDout){
+            , unsigned int gl,int sizeDout){
                 //float* feature; 
-                __shared__ float subGLCM[8 * 8 * 4];
-                __shared__ int subHistogrambGLCM[8 * 8 * 4];
+                __shared__ float subGLCM[8*8*4];
+                //__shared__ int tempGLCM[8*8*4];
+                __shared__ int subHistogrambGLCM[8*8*4];
+                __shared__ int  a0;
+                __shared__ int a90 ;
+                __shared__ int a45 ;
+                __shared__ int a135 ;
+                
                 //__shared__ float featureVector[5];
                 int blockID = blockIdx.x + blockIdx.y *gridDim.x;
                 int idX = blockID * (blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x) + threadIdx.x;
                 int localIdX = threadIdx.x + threadIdx.y * blockDim.x;
                 if (localIdX<gl*gl*4){
                     subHistogrambGLCM[localIdX] = 0;
+                    a0=0;a90=0;a45=0;a135=0;
                 }
                 
                 __syncthreads();
@@ -83,24 +87,28 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, float *d_out, const int N,c
                     if(idX + 1 < N && floorf((idX + 1)/blockDim.x)==floorf(idX/blockDim.x)){
                         //d = 0 - Compare and add Current index and Current Index  + 1  
                         atomicAdd( &subHistogrambGLCM[pixels[idX] * gl + pixels[idX+1] ],1);   
-						//atomicAdd( &d_out[blockID * gl * gl * 4 + (int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
+						atomicAdd(&a0,1);
+                        //atomicAdd( &d_out[blockID * gl * gl * 4 + (int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
                     }
                     if(((int(idX)-int(blockDim.x))>=0) && (floorf((idX - blockDim.x)/(blockDim.x * blockDim.y))== floorf(idX /(blockDim.x * blockDim.y)))){
                         //d = 90
                         atomicAdd( &subHistogrambGLCM[(1 * gl * gl) + pixels[idX] * gl +  pixels[idX-blockDim.x]], 1);
-						//atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*1 +(int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
+						atomicAdd(&a90,1);
+                        //atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*1 +(int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
                     }
                     if (floorf((idX - blockDim.x+1)/(blockDim.x * blockDim.y) )== floorf(idX /(blockDim.x * blockDim.y))){
                         //d = 45
                         if (floorf((idX - blockDim.x+1)/blockDim.x)  < floorf(idX /blockDim.x))
                             atomicAdd( &subHistogrambGLCM[(2 * gl * gl) + pixels[idX] * gl +  pixels[idX-blockDim.x+1]], 1);
-							//atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*2 +(int)pixels[idX] * gl + (int)pixels[idX+1]] ,(int) 1);
+							atomicAdd(&a45,1);
+                            //atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*2 +(int)pixels[idX] * gl + (int)pixels[idX+1]] ,(int) 1);
                     }
                     if(floorf((idX - blockDim.x-1)/(blockDim.x * blockDim.y))== floorf(idX /(blockDim.x * blockDim.y))){
                         //d = 135
                         if (floorf((idX - blockDim.x-1)/blockDim.x) + 1 == floorf(idX /blockDim.x)){
                             atomicAdd( &subHistogrambGLCM[(3 * gl* gl)  + pixels[idX] * gl] +  pixels[idX - blockDim.x-1], 1);
-							//atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*3 +(int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
+							atomicAdd(&a135,1);
+                            //atomicAdd( &d_out[blockID * gl * gl * 4 + gl*gl*3 +(int)pixels[idX] * gl + (int)pixels[idX+1]] , (int)1);
                         }                  
                     }
                 }
@@ -110,11 +118,29 @@ GLOBAL void ComputeCoOccurenceMat(const int *pixels, float *d_out, const int N,c
                 /* if(localIdX < gl*gl){
                     normalizeGLCM(subGLCM,localIdX,gl);
                 }  */
-                 if (localIdX<gl*gl*4){
-                    normalizeGLCM(subHistogrambGLCM,subGLCM,localIdX,gl);
-                }  
+                if (localIdX<gl*gl*4){
+                    //tempGLCM[localIdX] = subHistogrambGLCM[localIdX];
+                    subGLCM[localIdX] = subHistogrambGLCM[localIdX];
+                }
+                 if (floorf(localIdX/64)==0){
+                    subGLCM[localIdX] = __fdividef(subHistogrambGLCM[localIdX],a0);
+                }
+                if (floorf(localIdX/64)==1){
+                    subGLCM[localIdX] = __fdividef(subHistogrambGLCM[localIdX],a90);
+                }
+                if (floorf(localIdX/64)==2){
+                    subGLCM[localIdX] = __fdividef(subHistogrambGLCM[localIdX],a45);
+                }
+                if (floorf(localIdX/64)==3){
+                    subGLCM[localIdX] = __fdividef(subHistogrambGLCM[localIdX],a135);
+                } 
+                
                 __syncthreads();
+
+        
+                
                 if (localIdX< gl * gl * 4){
+                    //subGLCM[localIdX] = __fdividef(subGLCM[localIdX],tempGLCM[(gl*gl)*localIdX/(gl*gl)]);
                     if (blockID * gl * gl * 4 + localIdX < sizeDout)
                     	d_out[blockID * gl * gl * 4 + localIdX] = subGLCM[localIdX];
                     

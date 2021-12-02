@@ -96,15 +96,15 @@ int main(){
 
   
   
-    for (int i = 0 ; i < 64*64*64*4  ; i ++){
+    /*  for (int i = 0 ; i < 64*64*64*4  ; i ++){
         if (i%8==0)
             cout << "\n";
         if (i%256==0)
             cout << "\n";
         
         cout<<  *(d_out + i);
-    }                             
-
+    }                            
+ */
 
 
  

@@ -236,10 +236,10 @@ GLOBAL void CalculateStddY(int gl,float* SubGLCM, float* meanY,float* stddY){
     unsigned int i = blockIdx.x*(blockDim.x*4) + threadIdx.x;
     unsigned int id = threadIdx.x;
     
-    localGLCM1[id] = SubGLCM[i]                  * __fmul_ru ( meanY[blockIdx.x * 4 + 0] - id%gl  - 1 ,  meanY[blockIdx.x * 4 + 0] - id%gl  - 1  );
-    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __fmul_ru ( meanY[blockIdx.x * 4 + 1] - id%gl  - 1 ,  meanY[blockIdx.x * 4 + 1] - id%gl  - 1  );
-    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __fmul_ru ( meanY[blockIdx.x * 4 + 2] - id%gl  - 1 ,  meanY[blockIdx.x * 4 + 2] - id%gl  - 1  );
-    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __fmul_ru ( meanY[blockIdx.x * 4 + 3] - id%gl  - 1 ,  meanY[blockIdx.x * 4 + 3] - id%gl  - 1  );
+    localGLCM1[id] = SubGLCM[i]                  * __fmul_ru ( meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1 ,  meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1  );
+    localGLCM2[id] = SubGLCM[i + blockDim.x * 1] * __fmul_ru ( meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1 ,  meanY[blockIdx.x * 4 + 1] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1  );
+    localGLCM3[id] = SubGLCM[i + blockDim.x * 2] * __fmul_ru ( meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1 ,  meanY[blockIdx.x * 4 + 2] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1  );
+    localGLCM4[id] = SubGLCM[i + blockDim.x * 3] * __fmul_ru ( meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1 ,  meanY[blockIdx.x * 4 + 3] - (floorf(id/gl) - floorf(id/(gl*gl)) * gl )  - 1  );
     
 
     /* localGLCM1[id] = SubGLCM[i] * __powf( abs(meanY[blockIdx.x * 4 + 0] - (floorf(id/gl) + floorf(id/(gl*gl)) * gl )  - 1) ,2);
