@@ -30,6 +30,7 @@ int main(){
     cout << duration.count() <<" ms"<< endl;    
     uint r = img.get_rows();
     uint c = img.get_cols(); 
+    int N = r*c/(subImgDim*subImgDim);
     //cout<<"From main r : "<< r << "\n";
     //cout<<"From main c : "<< c << "\n";
     //auto stop = high_resolution_clock::now();
@@ -109,10 +110,16 @@ int main(){
 
  
     //cout <<"GLCMs computed"<< "\n";
+    float* features = (float*) malloc(N *5* sizeof(float));
+    FeatureComputation::getFeatures(d_out,8,r,c,subImgDim,features);
 
-    float* h = FeatureComputation::getFeatures(d_out,8,r,c,subImgDim);
-
-
+    for (int i = 0 ; i < 64*64*5  ; i ++){
+        if (i%5==0)
+            cout  <<"\n" ;
+        
+        
+        cout<<  *(features + i)<<" ";
+    }                        
 //end testing
 
 /*

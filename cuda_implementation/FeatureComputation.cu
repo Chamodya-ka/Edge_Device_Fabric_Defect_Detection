@@ -11,11 +11,30 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
       if (abort) exit(code);
    }
 }
+GLOBAL void copyArray(float* feat_1,float* feat_2,float* feat_3,float* feat_4,float* feat_5,float* d_features,int N){
+	//1D blocks of size 256
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id<N) {
+
+		for (int i = 0 ; i <5 ; i ++){
+			if (i==0)
+				d_features[id*5 + i ] = feat_1[id];
+			if (i==1)
+				d_features[id*5 + i ] = feat_2[id];
+			if (i==2)
+				d_features[id*5 + i ] = feat_3[id];
+			if (i==3)
+				d_features[id*5 + i ] = feat_4[id];
+			if (i==4)
+				d_features[id*5 + i ] = feat_5[id];
+		}
+		
+	}
+}
 
 
-
-float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,unsigned int subImgDim){
-    float* h_feat;
+void FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,unsigned int subImgDim,float* features){
+    
     //float* d_feat;
     //int* d_subGLCM;
     size_t intsize = sizeof(int);
@@ -48,6 +67,7 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	float* d_inp_3; 
 	float* d_inp_4; 
 	float* d_inp_5; 
+	float* d_features;
 	//float* stddX_h;
 	//float* stddY_h;
 	float* stddX_d;
@@ -73,7 +93,7 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	cudaMalloc(&d_feat_3,floatsize * N);
 	cudaMalloc(&d_feat_4,floatsize * N);
 	cudaMalloc(&d_feat_5,floatsize * N);
-	;	
+	cudaMalloc(&d_features,floatsize * N * 5);	
 	cudaMalloc(&d_inp_1, floatsize * 4 * gl * gl * N);
 	cudaMalloc(&d_inp_2, floatsize * 4  * gl * gl * N);
 	cudaMalloc(&d_inp_3, floatsize * 4  * gl * gl * N);
@@ -138,11 +158,13 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 
  	int THREADS = gl * gl * 2; // HALF THREADS
     int BLOCKS =  N  ;//( gl * gl * 4 * N + THREADS -1 )/ THREADS;
-
+	int copythreads = 256;
+	int copyblocks = (N + copythreads -1)/copythreads;
 	dim3 intermediateTHREADS(THREADS/2);
 	dim3 threads(THREADS);
     dim3 blocks(BLOCKS);
-
+	dim3 cpythreads(copythreads);
+	dim3 cpyblocks(copyblocks);
 	cudaMemsetAsync(stddX_d,0,floatsize *num_intermediates,stream[4]);
 	cudaMemsetAsync(stddY_d,0,floatsize *num_intermediates,stream[4]);
 	cudaMemsetAsync(meanX_d,0,floatsize *num_intermediates,stream[4]);
@@ -166,13 +188,16 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	HomogeneityFeature2<<<blocks,threads,0,stream[3]>>>(gl , d_inp_4 ,d_feat_4);
 	CorrelationFeature2<<<blocks,threads,0,stream[4]>>>(gl , d_inp_5 ,d_feat_5,meanX_d,meanY_d,stddX_d,stddY_d);
 
-	
-	cudaMemcpyAsync(h_feat_1, d_feat_1, N * floatsize,cudaMemcpyDeviceToHost,stream[0]);
-	cudaMemcpyAsync(h_feat_2, d_feat_2, N * floatsize,cudaMemcpyDeviceToHost,stream[1]);
-	cudaMemcpyAsync(h_feat_3, d_feat_3, N * floatsize,cudaMemcpyDeviceToHost,stream[2]);
-	cudaMemcpyAsync(h_feat_4, d_feat_4, N * floatsize,cudaMemcpyDeviceToHost,stream[3]);
-	cudaMemcpyAsync(h_feat_5, d_feat_5, N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 
+
+	//cudaMemcpyAsync(h_feat_1, d_feat_1, N * floatsize,cudaMemcpyDeviceToHost,stream[0]);
+	//cudaMemcpyAsync(h_feat_2, d_feat_2, N * floatsize,cudaMemcpyDeviceToHost,stream[1]);
+	//cudaMemcpyAsync(h_feat_3, d_feat_3, N * floatsize,cudaMemcpyDeviceToHost,stream[2]);
+	//cudaMemcpyAsync(h_feat_4, d_feat_4, N * floatsize,cudaMemcpyDeviceToHost,stream[3]);
+	//cudaMemcpyAsync(h_feat_5, d_feat_5, N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
+
+	gpuErrchk( cudaDeviceSynchronize() );
+	copyArray<<<cpyblocks,cpythreads>>>(d_feat_1,d_feat_2,d_feat_3,d_feat_4,d_feat_5,d_features,N);
 	gpuErrchk( cudaDeviceSynchronize() );
 	cudaFree(d_feat_1);
 	cudaFree(d_feat_2);
@@ -181,10 +206,10 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	cudaFree(d_feat_5);
 	//cudaFree(subGLCM);
 	cudaFree(d_inp_1);
-	//cudaFree(d_inp_2);
-	//cudaFree(d_inp_3);
-	//cudaFree(d_inp_4);
-	//cudaFree(d_inp_5);
+	cudaFree(d_inp_2);
+	cudaFree(d_inp_3);
+	cudaFree(d_inp_4);
+	cudaFree(d_inp_5);
 	
 	
 	
@@ -193,14 +218,15 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
 	///free(h_sGLCM_2);
 	//free(h_sGLCM_3);
 	//free(h_sGLCM_4);
-	float* h_feat_meanX = (float*) malloc(floatsize * N * 4);
-	float* h_feat_meanY = (float*) malloc(floatsize * N * 4);
-	float* h_feat_stddX = (float*) malloc(floatsize * N * 4);
-	float* h_feat_stddY = (float*) malloc(floatsize * N * 4);
+	//float* h_feat_meanX = (float*) malloc(floatsize * N * 4);
+	//float* h_feat_meanY = (float*) malloc(floatsize * N * 4);
+	//float* h_feat_stddX = (float*) malloc(floatsize * N * 4);
+	//float* h_feat_stddY = (float*) malloc(floatsize * N * 4);
 	//cudaMemcpyAsync(h_feat_meanX, meanX_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 	//cudaMemcpyAsync(h_feat_meanY, meanY_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 	//cudaMemcpyAsync(h_feat_stddX, stddX_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
 	//cudaMemcpyAsync(h_feat_stddY, stddY_d, 4 * N * floatsize,cudaMemcpyDeviceToHost,stream[4]);
+	cudaMemcpy(features, d_features, 5 * N * floatsize,cudaMemcpyDeviceToHost);
 	//  std::cout << h_feat_1[1493]<<"\n";
 
 /* 	 for (int i = 0 ; i < N ;i++){
@@ -257,7 +283,7 @@ float* FeatureComputation::getFeatures(float* subGLCM,int gl,int rows, int cols,
         
     }  */
 
-    return h_feat;
+    return ;
 
 
 

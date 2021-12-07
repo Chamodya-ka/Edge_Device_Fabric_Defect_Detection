@@ -7,7 +7,7 @@
 
 class FeatureComputation{
     public:
-        static float* getFeatures(float* subGLCMs,int gl, int rows, int cols,unsigned int subImgDim);
+        static void getFeatures(float* subGLCMs,int gl, int rows, int cols,unsigned int subImgDim,float* features);
 
 
 };
