@@ -45,7 +45,7 @@ Mat ImageLoader::readImageFromFile(string filename,unsigned int d_sizex, unsigne
     //cout <<  "Depth - " << image.depth() << std::endl ;
 
     //Mat resized;
-    //cv::resize(image,image,Size(d_sizex,d_sizey),INTER_LINEAR);    
+    cv::resize(image,image,Size(d_sizex,d_sizey),INTER_LINEAR);    
     //image.release();
     return image;
 }

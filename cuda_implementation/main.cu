@@ -15,22 +15,67 @@ using namespace std::chrono;
  */
 using namespace std;
 
-int main(){
-    cudaFree(0);
-    auto start = high_resolution_clock::now();
-    string fname = "../testimg/resized/gradient.png";
+int main(int argc, char *argv[]){
     unsigned int  maxgl = 255;
     unsigned int  mingl = 0;
     unsigned int  desiredgl = 7;
     unsigned int subImgDim = 32;
+    uint r = 2048;
+    uint c = 2048 ;
+    int N = r*c/(subImgDim*subImgDim);
+    GLCMComputation glcm = GLCMComputation();
+     if (argc>1){
+        if (!strcmp(argv[1],"-n")){
+            cout<<"Generating csv records"<<"\n";
+            fstream fout;
+            fout.open("../ref_data/ref_csv/ref_data.csv",ios::out);
+            string fname = argv[2];
+            vector<String> filenames;
+            cv::glob(fname, filenames);
+            Image img = ImageLoader::readImage(filenames[0],maxgl,mingl,desiredgl,r,c);
+            float* features = (float*) malloc(N *5* sizeof(float));
+            float* d_out;
+            std::string segment;
+            for (size_t i=0; i<filenames.size(); i++)
+            {
+                
+                img = ImageLoader::readImage(filenames[i],maxgl,mingl,desiredgl,r,c);
+                d_out = glcm.GetSubGLCM(img,1,1,subImgDim);
+                FeatureComputation::getFeatures(d_out,8,r,c,subImgDim,features);
+                for (int j  = 0 ; j< N * 5 ; j++){
+                    if(j==0)
+                        fout<< filenames[i]<<",";
+                    if (j!=0 and j%5==0)
+                        {fout << "\n";
+                        fout<< filenames[i]<<",";}
+                         
+                    fout << *(features+j);
+                    if (j%5!=4)
+                        fout<<",";
+                    //cout<<  *(features + j)<<" ";
+                }
+                fout << "\n";
+                
+            }
+            free(d_out);
+            free(features);
+            cout<<argv[1]<<"\n";
+            return 0 ;
+
+        }
+        
+    }  
+
+    cudaFree(0);
+    auto start = high_resolution_clock::now();
+    string fname = "../testimg/1.bmp";
+
     Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,2048,2048);
         auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
  
     cout << duration.count() <<" ms"<< endl;    
-    uint r = img.get_rows();
-    uint c = img.get_cols(); 
-    int N = r*c/(subImgDim*subImgDim);
+
     //cout<<"From main r : "<< r << "\n";
     //cout<<"From main c : "<< c << "\n";
     //auto stop = high_resolution_clock::now();
@@ -92,8 +137,8 @@ int main(){
     std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl; 
      */
  
-    GLCMComputation glcm = GLCMComputation();
-    float* d_out = glcm.GetSubGLCM(img,1,1,subImgDim); // device pointer.
+    
+    float* d_out = glcm.GetSubGLCM(img,1,1,subImgDim); // host pointer.
 
   
   
@@ -113,9 +158,10 @@ int main(){
     float* features = (float*) malloc(N *5* sizeof(float));
     FeatureComputation::getFeatures(d_out,8,r,c,subImgDim,features);
 
-    for (int i = 0 ; i < 64*64*5  ; i ++){
-        if (i%5==0)
-            cout  <<"\n" ;
+    for (int i = 0 ; i < N*5  ; i ++){
+        if (i%5==0 and i !=0)
+            {cout  <<i ;
+            cout  <<"\n" ;} 
         
         
         cout<<  *(features + i)<<" ";
