@@ -73,9 +73,9 @@ Therefore, I have minimized loops outside parallelized part of the algorithm. Op
 - Tile size  = 32 x 32
 - Note : times before computed for 16 gray levels and times after are for 8 gray levels
          
-| Component/Calculation | Times before | Times after parallelization |
+|Parallelized Component/Calculation | Times before | Times after parallelization |
 |---|---|---|
-|Quantization | 7 ms | 1.4ms|
+|Quantization | 7 ms | 1.4ms +(8-12 ms)*|
 |Extracting GLCMs| 180ms| -|
 |Normalize GLCM| 51ms| -|
 |Flatten GLCM|1.8us|13ms|
@@ -85,6 +85,40 @@ Therefore, I have minimized loops outside parallelized part of the algorithm. Op
 |CORRELATION feature| 149ms| 1.31ms|
 |Means and Stdd | 246ms| 2.53ms|
 |ENTROPY feature| 504ms| 512us|
+
+
+- Reading the image : 49ms (inclusize of resizing to 2048x2048)
+- Quantization requires to know the maximum pixel intensity of the input image, unless specified need to find the maximum (8 to 12ms)
+
+|Other Component| Time |
+|---|---|
+| Read image | 49ms +/- 10ms |
+| Finding min/max pixel| 11ms|
+| Quantization and pixel vector creation| 25ms|
+| Create image object| 6ms|
+|---|---|
+|Total to pre process image| ~98ms|
+
+In addition to the above, kNN based classifier was attempted by using code from [this repo](https://github.com/vincentfpgarcia/kNN-CUDA/blob/master/code/knncuda.cu). Although it was sufficient to get an estimate of time consumption, to get a class based prediction further changes need to be done.
+- Compute distances - 30ms
+- Sorting           - 27ms
+- Helper kernels    - ~50us
+
+Also the data transfer overheads are as follows
+
+- Data copy from host to device : 18ms
+- Data copy from device to host : 16ms
+
+
+#### Overall times observed using std::chrono on Jetson TX2
+|Component|Time|
+|---|---|
+|Image pre processing  | ~98ms|
+|GLCM extraction       | ~38ms|
+|Feature computations  | ~20ms|
+|kNN approximate time  | ~90ms|
+
+
 
 
 ## Challenges
