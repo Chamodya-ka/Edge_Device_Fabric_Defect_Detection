@@ -75,10 +75,10 @@ Therefore, I have minimized loops outside parallelized part of the algorithm. Op
          
 | Component/Calculation | Times before | Times after parallelization |
 |---|---|---|
-|Quantization | 7 ms ||
-|Extracting GLCMs| 180ms||
-|Normalize GLCM| 51ms||
-|Flatten GLCM|1.8us||
+|Quantization | 7 ms | 1.4ms|
+|Extracting GLCMs| 180ms| -|
+|Normalize GLCM| 51ms| -|
+|Flatten GLCM|1.8us|13ms|
 |ENERGY feature| 46ms| 412us|
 |CONTRAST feature| 55.8ms| 764.7us|
 |HOMOGEINITY feature| 53.5ms| 1.46ms|
