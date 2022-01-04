@@ -1,3 +1,11 @@
+# Haralick texture feature extraction process
+
+<img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/knn/cuda_implementation/images/Screenshot%20from%202022-01-04%2021-57-40.png" width="900">
+
+- Image preprocessing - Resizing, GrayScaling(if necessary), Quantizing
+- Obtain Gray Level Co-occurence matrices - GLCMs for 16x16 or 32x32 sub-plots of the image
+- Obtain Textural features - Features for every sub GLCM 
+
 ## Read image from file and Preprocessing
 
 Using ImageLoader images are loaded as grayscaled images of depth : ```CV_8UC1``` using opencv. The image is quantized and converted to a uint vector of pixels. An Image object is returned containing the quantized pixels, number of rows, number of columns and gray level
@@ -33,7 +41,7 @@ Quantization is done parallelly.
 The 1D image vector obtained from the ImageLoader is fed into the GLCMComputation object. GLCMComputation::GetSubGLCM(params) returns the GLCMS calculated for 32x32 pixels^2 sub windows and it is used for demonstration. 4 Co-occurence matrices are calculated for ```theta=0``` ```theta=45``` ```theta=90``` ```theta=135```.Hence the resulting array would contain 64x64x4 sub GLCMs. These sub GLCMs will be used to calculate the Haralick features to obtain a feature vector.
 
 #####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);```
-Kernel used to calculate sub GLCMs will be extended to calculate the features. Hence this function will be only used for testing and demonstration. (96-130 ms)
+~30ms
 
 ##### params
 ```img``` - Image object
@@ -45,9 +53,12 @@ Kernel used to calculate sub GLCMs will be extended to calculate the features. H
 
 ## Computing Haralick Texture Features from sub-GLCMs
 
-<img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/main/cuda_implementation/images/FeatureCalculation.jpg" width="600">
+<img src="https://github.com/Chamodya-ka/Edge_Device_Fabric_Defect_Detection/blob/knn/cuda_implementation/images/Screenshot%20from%202022-01-04%2022-07-30.png" width="600">
 
-This is an extension to the above mentioned function. The kernel used to calculate the sub GLCMs was modified to calculate the features. The sub GLCMs array is not required hence it will be discarded later (Not yet discarded for testing purposed). The produced 4 sub GLCMs from 64x64 blocks of the image is passed onto 5 device kernels to calculate the 5 texture features. Each block uses a ```__shared__ float[5]``` to store the feature vectors. This shared memory array is copied on to a ```float [64 x 64 x 5]``` array in global memory.
+5 kernels are launched to calculate the 5 haralick features, ENGERGY, CONTRAST, HOMOGEINITY, ENTROPY and CORRELATION. Each kernel works on its own copy of the subGLCM array. A duplicate of the subGLCM is copied on to the shared memory and by using parallel reductions, summations and element-wise products are done efficiently without any data write collisions. CUDA streams was utilized to compute and transfer data concurrently, however its benefits were insignificant.
+
+(Previous implementations)
+The kernel used to calculate the sub GLCMs was modified to calculate the features. The produced 4 sub GLCMs from 64x64 blocks of the image is passed onto 5 device kernels to calculate the 5 texture features. Each block uses a ```__shared__ float[5]``` to store the feature vectors. This data in the shared memory array is copied on to a ```float [64 x 64 x 5]``` array in global memory. This was too resource intensive to run on the jetson TX2. Since one global kernel invokes multiple device kernels, CUDA streams was not used here.
 
 #####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);``` 
 
@@ -60,7 +71,7 @@ This is an extension to the above mentioned function. The kernel used to calcula
 ```out``` - pointer to the array containing the 64x64x5 feature vectors // 1 line change not yet implemented
 
 #### (Modifications)
-A sperate set of kernels computes the 5 Haralick features and 4 kernels to calculate the means and standard deviations. (in NewFeatureCalculation.cu). This was split up due to exceeding resources available on the TX2. Moreover, further optimizations such as using parallel reductions and single precision intrinsic functions are utilized. (on average <10ms for calculation of features).
+Correlation feature extration kernel was split up into 5 kernels to calculate statndard deviations and means (in NewFeatureCalculation.cu).  Moreover, further optimizations such as using parallel reductions and single precision intrinsic functions were utilized. (on average <10ms for computational part in the calculation of the 5 features).
 
 
 ## Feedback received from Mid-Evaluation
@@ -105,7 +116,7 @@ In addition to the above, kNN based classifier was attempted by using code from 
 - Sorting           - 27ms
 - Helper kernels    - ~50us
 
-Also the data transfer overheads are as follows
+Also the data transfer times in total are as follows, some of the data copy times are done parallelly to ccomputation hence overal effect on time is lower.
 
 - Data copy from host to device : 18ms
 - Data copy from device to host : 16ms
