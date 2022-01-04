@@ -12,7 +12,7 @@ Using ImageLoader images are loaded as grayscaled images of depth : ```CV_8UC1``
 
 ```mingl``` - Minimum intensity in the given image ```DEFAULT = 0```
 
-```desiredgl``` - How many gray levels required  ```DEFAULT = 7``` ie: 8 graylevels including 0 (Check if required is excluding 0)
+```desiredgl``` - How many gray levels required  ```DEFAULT = 7``` ie: 8 graylevels including 0 
 ##### returns
 ```Image``` - Object  
 ###### Input image
@@ -49,7 +49,7 @@ Kernel used to calculate sub GLCMs will be extended to calculate the features. H
 
 This is an extension to the above mentioned function. The kernel used to calculate the sub GLCMs was modified to calculate the features. The sub GLCMs array is not required hence it will be discarded later (Not yet discarded for testing purposed). The produced 4 sub GLCMs from 64x64 blocks of the image is passed onto 5 device kernels to calculate the 5 texture features. Each block uses a ```__shared__ float[5]``` to store the feature vectors. This shared memory array is copied on to a ```float [64 x 64 x 5]``` array in global memory.
 
-#####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);``` (Needs name change)
+#####  ```int* out = GLCMComputation::GetSubGLCM(img,d,angle);``` 
 
 ##### params
 ```img``` - Image object
@@ -87,8 +87,9 @@ Therefore, I have minimized loops outside parallelized part of the algorithm. Op
 |ENTROPY feature| 504ms| 512us|
 
 
-- Reading the image : 49ms (inclusize of resizing to 2048x2048)
-- Quantization requires to know the maximum pixel intensity of the input image, unless specified need to find the maximum (8 to 12ms)
+- Reading the image : 49ms (inclusive of resizing to 2048x2048)
+- Quantization requires to know the maximum pixel intensity of the input image, unless specified need to find the maximum (8 to 12ms). This is done by using MinMaxLoc function provided by OpenCV. This can be eliminated if the maximum intensity of a pixel is known.
+
 
 |Other Component| Time |
 |---|---|
