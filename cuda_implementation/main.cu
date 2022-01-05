@@ -10,6 +10,8 @@
 #include <math.h>
 #include <algorithm>
 #include <stdlib.h>
+#include <fstream>
+#include <string.h>
 using namespace std::chrono;
 
 //nvvp -vm /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
@@ -259,7 +261,7 @@ int main(int argc, char *argv[]){
     int   * knn_index  = (int*)   malloc(query_nb * k   * sizeof(int));
     cudaFree(0);
     auto start = high_resolution_clock::now();
-    string fname = "../ref_data/ref_images/sample/01.bmp";
+    string fname = "../testimg/1.bmp";
 
     Image img = ImageLoader::readImage(fname,maxgl,mingl,desiredgl,2048,2048);
     auto stop = high_resolution_clock::now();
@@ -328,9 +330,12 @@ int main(int argc, char *argv[]){
     std::cout << "Size of pixels vector : " + to_string(pixels.size()) << endl;  */
     
  
-    
+    start = high_resolution_clock::now();
     float* d_out = glcm.GetSubGLCM(img,1,1,subImgDim); // host pointer.
-
+	stop = high_resolution_clock::now();
+    duration = duration_cast<milliseconds>(stop - start);
+    cout << duration.count() <<" ms for glcm extration"<< endl;  
+   
   
   
    /*  for (int i = 0 ; i < 64*64*64*4  ; i ++){
@@ -346,16 +351,13 @@ int main(int argc, char *argv[]){
 
  
     //cout <<"GLCMs computed"<< "\n";
+	start = high_resolution_clock::now();
     float* features = (float*) malloc(N *5* sizeof(float));
     FeatureComputation::getFeatures(d_out,8,r,c,subImgDim,features);
-
-    for (int i = 0 ; i < 5  ; i ++){
-        if (i%5==0 and i !=0)
-            {cout  <<"\n" ;} 
-        
-        
-        cout<<  *(features + i)<<" ";
-    }        
+	stop = high_resolution_clock::now();
+    duration = duration_cast<milliseconds>(stop - start);
+    cout << duration.count() <<" ms for feature computation"<< endl;  
+   
     
     fstream fin;
     fin.open("../ref_data/data.csv",ios::in);
@@ -398,8 +400,12 @@ int main(int argc, char *argv[]){
             break;
         }
     }
+	start = high_resolution_clock::now();
     //test(ref, ref_nb, query, query_nb, dim, k, knn_dist, knn_index, &knn_c,            "knn_c",              2);
-    test(ref, ref_nb, features, query_nb, dim, k, knn_dist, knn_index, &knn_cuda_texture,  "knn_cuda_texture",  1); 
+    test(ref, ref_nb, features, query_nb, dim, k, knn_dist, knn_index, &knn_cuda_texture,  "knn_cuda_texture",  1);
+	stop = high_resolution_clock::now();
+    duration = duration_cast<milliseconds>(stop - start);
+    cout << duration.count() <<" ms for kNN"<< endl;   
     free(d_out);
     free(features);                 
 //end testing

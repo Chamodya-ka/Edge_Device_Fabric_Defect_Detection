@@ -1,0 +1,71 @@
+<pre><font color="#8AE234"><b>root@nvidia-desktop</b></font>:<font color="#729FCF"><b>~/Chamodya/with_knn_branch/Edge_Device_Fabric_Defect_Detection/cuda_implementation/build</b></font># nvprof ./cuda_implementation 
+Inferencing
+==9716== NVPROF is profiling process 9716, command: ./cuda_implementation
+==9716== Warning: Unified Memory Profiling is not supported on the underlying platform. System requirements for unified memory can be found at: http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements
+48 ms To read image
+11 ms To find min and max
+here
+25 ms To quantize image
+6 ms To create image obj
+93 ms
+BLOCKSx :64
+BLOCKSy :64
+TESTING!@N 4096 blocksX 64 blocksY 64
+0.387994 0.322759 0.135726 0.430526 -42.9802 size of data vector 40960
+PARAMETERS
+- Number reference points : 8192
+- Number query points     : 4096
+- Dimension of points     : 5
+- Number of neighbors     : 16
+
+0.375671 0.333943 0.1321 0.428484 -42.468 
+- knn_cuda_texture  : FAILED
+==9716== Profiling application: ./cuda_implementation
+==9716== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   27.49%  30.621ms         1  30.621ms  30.621ms  30.621ms  compute_distance_texture(__int64, int, float*, int, int, int, float*)
+                   24.76%  27.580ms         1  27.580ms  27.580ms  27.580ms  modified_insertion_sort(float*, int, int*, int, int, int, int)
+                   15.82%  17.618ms         8  2.2023ms  9.5720us  7.0021ms  [CUDA memcpy HtoD]
+                   14.22%  15.843ms         5  3.1687ms  8.6440us  13.296ms  [CUDA memcpy DtoH]
+                   11.88%  13.231ms         1  13.231ms  13.231ms  13.231ms  ComputeCoOccurenceMat(int const *, float*, int, int, int, unsigned int, int)
+                    1.26%  1.4089ms         1  1.4089ms  1.4089ms  1.4089ms  quantizeArray(unsigned char*, int*, unsigned int, unsigned int, unsigned int, int)
+                    0.96%  1.0720ms         1  1.0720ms  1.0720ms  1.0720ms  CorrelationFeature2(int, float*, float*, float*, float*, float*, float*)
+                    0.93%  1.0403ms         1  1.0403ms  1.0403ms  1.0403ms  HomogeneityFeature2(int, float*, float*)
+                    0.49%  548.91us         1  548.91us  548.91us  548.91us  ContrastFeature2(int, float*, float*)
+                    0.41%  451.24us         1  451.24us  451.24us  451.24us  CalculateStddY(int, float*, float*, float*)
+                    0.39%  431.90us         1  431.90us  431.90us  431.90us  CalculateStddX(int, float*, float*, float*)
+                    0.39%  430.27us         1  430.27us  430.27us  430.27us  CalculateMeanY(int, float*, float*)
+                    0.37%  412.37us         1  412.37us  412.37us  412.37us  CalculateMeanX(int, float*, float*)
+                    0.28%  309.29us         1  309.29us  309.29us  309.29us  EntropyFeature2(int, float*, float*)
+                    0.27%  303.65us         1  303.65us  303.65us  303.65us  EnergyFeature2(int, float*, float*)
+                    0.02%  26.571us         1  26.571us  26.571us  26.571us  compute_sqrt(float*, int, int, int)
+                    0.02%  21.097us         1  21.097us  21.097us  21.097us  copyArray(float*, float*, float*, float*, float*, float*, int)
+                    0.02%  18.250us         5  3.6500us     929ns  6.0510us  [CUDA memset]
+                    0.02%  17.128us         1  17.128us  17.128us  17.128us  [CUDA memcpy HtoA]
+      API calls:   67.06%  259.89ms        20  12.994ms  16.419us  253.20ms  cudaFree
+                   20.11%  77.931ms         6  12.989ms  35.718us  30.728ms  cudaDeviceSynchronize
+                    7.12%  27.581ms         5  5.5161ms  166.43us  14.232ms  cudaMemcpy
+                    3.16%  12.257ms         5  2.4514ms  1.8696ms  2.8222ms  cudaMemcpyAsync
+                    0.75%  2.9056ms         3  968.53us  23.908us  2.8270ms  cudaMallocPitch
+                    0.73%  2.8435ms        19  149.66us  11.298us  465.97us  cudaMalloc
+                    0.28%  1.0831ms        15  72.204us  37.607us  189.54us  cudaLaunchKernel
+                    0.27%  1.0434ms         1  1.0434ms  1.0434ms  1.0434ms  cudaMallocArray
+                    0.27%  1.0316ms         3  343.87us  142.07us  471.79us  cudaMemcpy2D
+                    0.05%  200.93us         1  200.93us  200.93us  200.93us  cudaFreeArray
+                    0.04%  165.73us        96  1.7260us     960ns  42.664us  cuDeviceGetAttribute
+                    0.04%  141.59us         1  141.59us  141.59us  141.59us  cudaMemcpyToArray
+                    0.03%  114.13us         5  22.826us  16.515us  44.360us  cudaStreamCreate
+                    0.03%  113.43us         4  28.356us  17.603us  55.497us  cudaMemsetAsync
+                    0.03%  99.857us         1  99.857us  99.857us  99.857us  cudaMemset
+                    0.01%  43.111us         1  43.111us  43.111us  43.111us  cudaCreateTextureObject
+                    0.01%  22.724us         1  22.724us  22.724us  22.724us  cudaDestroyTextureObject
+                    0.00%  11.330us         1  11.330us  11.330us  11.330us  cudaSetDevice
+                    0.00%  9.9220us         1  9.9220us  9.9220us  9.9220us  cuDeviceTotalMem
+                    0.00%  9.5360us         3  3.1780us  2.1760us  3.9680us  cudaGetLastError
+                    0.00%  8.2890us         3  2.7630us  1.7280us  3.9680us  cuDeviceGetCount
+                    0.00%  6.9130us         1  6.9130us  6.9130us  6.9130us  cuDeviceGetName
+                    0.00%  4.2890us         1  4.2890us  4.2890us  4.2890us  cudaGetDeviceCount
+                    0.00%  3.9360us         2  1.9680us  1.4400us  2.4960us  cuDeviceGet
+                    0.00%  1.0880us         1  1.0880us  1.0880us  1.0880us  cuDeviceGetUuid
+                    0.00%     544ns         1     544ns     544ns     544ns  cudaCreateChannelDesc
+</pre>

@@ -302,4 +302,4 @@ GLOBAL void CorrelationFeature2(int gl, float* subGLCM, float* feature, float* m
         feature[blockIdx.x] = corSubGLCM[0]/4;
 }
 
-#endif;
+#endif
